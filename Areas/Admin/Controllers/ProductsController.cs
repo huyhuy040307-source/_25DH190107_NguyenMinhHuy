@@ -75,7 +75,7 @@ namespace _25DH190107_NguyenMinhHuy.Areas.Admin.Controllers
             // Đoạn code liên quan tới phân trang
             // Lấy số trang hiện tại (mặc định là trang 1 nếu không có giá trị)
             int pageNumber = page ?? 1;
-            int pageSize = 2; // Số sản phẩm mỗi trang
+            int pageSize = 7; // Số sản phẩm mỗi trang
 
             // Dòng câu lệnh này, sử dụng ToPagedList để lấy danh sách đã phân trang
             // model.Products = products.ToList();
