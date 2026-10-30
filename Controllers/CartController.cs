@@ -1,5 +1,6 @@
 ﻿using _25DH190107_NguyenMinhHuy.Models;
 using _25DH190107_NguyenMinhHuy.Models.ViewModel;
+using PagedList;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -25,6 +26,27 @@ namespace _25DH190107_NguyenMinhHuy.Controllers
         public ActionResult Index()
         {
             var cart = GetCartService().GetCart();
+            return View(cart);
+        }
+        // Hiển thị giỏ hàng đã gom nhóm sản phẩm theo danh mục
+        public ActionResult Index2(int? page)
+        {
+            var cart = GetCartService().GetCart();
+            var products = db.Products.ToList();
+            var similarProducts = new List<Product>();
+
+            if (cart.Items != null && cart.Items.Any())
+            {
+                similarProducts = products.Where(p => cart.Items.Any(ci => ci.Category == p.Category.CategoryName)
+                    && !cart.Items.Any(ci => ci.ProductID == p.ProductID)).ToList();
+            }
+
+            // Đoạn code liên quan tới phân trang
+            // Lấy số trang hiện tại (mặc định là trang 1 nếu không có giá trị)
+            int pageNumber = page ?? 1;
+            int pageSize = cart.PageSize; // Số sản phẩm mỗi trang
+
+            cart.SimilarProducts = similarProducts.OrderBy(p => p.ProductID).ToPagedList(pageNumber, pageSize);
             return View(cart);
         }
 

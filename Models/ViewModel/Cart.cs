@@ -11,6 +11,16 @@ namespace _25DH190107_NguyenMinhHuy.Models.ViewModel
 
         public IEnumerable<CartItem> Items => items;
 
+        //danh sách các sản phẩm trong giỏ hàng đã được nhóm theo Category
+        public List<IGrouping<string, CartItem>> GroupedItems => items.GroupBy(i => i.Category).ToList();
+
+        // Các thuộc tính hỗ trợ phân trang
+        public int PageNumber { get; set; } // Trang hiện tại
+        public int PageSize { get; set; } = 6; // Số sản phẩm mỗi trang
+
+        //danh sách các sản phẩm cùng danh mục với các sản phẩm trong giỏ
+        public PagedList.IPagedList<Product> SimilarProducts { get; set; }
+
         // Thêm sản phẩm vào giỏ
         public void AddItem(int productId, string productImage, string productName,
             decimal unitPrice, int quantity, string category)
