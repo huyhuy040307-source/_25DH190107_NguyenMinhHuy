@@ -1,4 +1,4 @@
-﻿using System.Web.Mvc;
+using System.Web.Mvc;
 
 namespace _25DH190107_NguyenMinhHuy.Areas.Admin
 {
@@ -17,7 +17,8 @@ namespace _25DH190107_NguyenMinhHuy.Areas.Admin
             context.MapRoute(
                 "Admin_default",
                 "Admin/{controller}/{action}/{id}",
-                new { action = "Index", id = UrlParameter.Optional }
+                new { action = "Index", id = UrlParameter.Optional },
+                new[] { "_25DH190107_NguyenMinhHuy.Areas.Admin.Controllers" }
             );
         }
     }

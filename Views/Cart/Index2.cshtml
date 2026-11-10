@@ -1,4 +1,4 @@
-﻿@model _25DH190107_NguyenMinhHuy.Models.ViewModel.Cart
+@model _25DH190107_NguyenMinhHuy.Models.ViewModel.Cart
 @{
     ViewBag.Title = "Index2";
     Layout = "~/Views/Shared/_Layout.cshtml";
@@ -32,7 +32,7 @@
     <h2>GIỎ HÀNG</h2>
     <div class="shoppingcart">
 
-        @if (Model == null)
+        @if (Model == null || !Model.Items.Any())
         {<p>Bạn chưa có sản phẩm nào trong giỏ. </p> }
         else
         {
@@ -83,7 +83,7 @@
 
             <div class="col-md-3 cart-section">
                 <div><strong>Tổng giá trị: &nbsp;<span style="color: red;">@Model.TotalValue().ToString("N0")</span></strong></div>
-                <div>@Html.ActionLink("Mua hàng", "Index", "Payment", null, new { @class = "btn btn-danger cart-button" }) </div>
+                <div>@Html.ActionLink("Mua hàng", "Checkout", "Order", null, new { @class = "btn btn-danger cart-button" }) </div>
             </div>
         }
     </div>

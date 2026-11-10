@@ -1,4 +1,4 @@
-﻿using _25DH190107_NguyenMinhHuy.Models;
+using _25DH190107_NguyenMinhHuy.Models;
 using _25DH190107_NguyenMinhHuy.Models.ViewModel;
 using PagedList;
 using System;
@@ -79,6 +79,7 @@ namespace _25DH190107_NguyenMinhHuy.Controllers
             {
                 model.quantity = quantity.Value;
             }
+            model.estimatedValue = pro.ProductPrice * model.quantity;
 
             return View(model);
         }

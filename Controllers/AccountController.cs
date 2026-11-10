@@ -1,4 +1,4 @@
-﻿using _25DH190107_NguyenMinhHuy.Models;
+using _25DH190107_NguyenMinhHuy.Models;
 using _25DH190107_NguyenMinhHuy.Models.ViewModel;
 using System;
 using System.Collections.Generic;
@@ -94,6 +94,14 @@ namespace _25DH190107_NguyenMinhHuy.Controllers
             }
 
             return View(model);
+        }
+
+        // GET: Account/Logout
+        public ActionResult Logout()
+        {
+            Session.Clear();
+            FormsAuthentication.SignOut();
+            return RedirectToAction("Index", "Home");
         }
     }
 }

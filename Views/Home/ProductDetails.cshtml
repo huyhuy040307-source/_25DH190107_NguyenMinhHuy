@@ -1,4 +1,4 @@
-﻿@model _25DH190107_NguyenMinhHuy.Models.ViewModel.ProductDetailsVM
+@model _25DH190107_NguyenMinhHuy.Models.ViewModel.ProductDetailsVM
 @{
     ViewBag.Title = "ProductDetails";
     Layout = "~/Views/Shared/_Layout.cshtml";
@@ -40,7 +40,7 @@
                     <h4><strong>Số lượng </strong></h4>
                     <p>
                         @Html.TextBoxFor(model => model.quantity, new
-                     { @class = "form-control", @type = "number", @min = 1 })
+                     { @class = "form-control", @type = "number", @min = 1, onchange = "this.form.submit()" })
                     </p>
 
                     <h4><strong>Tạm tính</strong> </h4>
