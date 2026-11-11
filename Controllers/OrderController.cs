@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using System.Web.Mvc;
+using System.Data.Entity;
+using System.Data.Entity.Validation;
 
 namespace _25DH190107_NguyenMinhHuy.Controllers
 {
@@ -81,6 +83,12 @@ namespace _25DH190107_NguyenMinhHuy.Controllers
                 //Nếu người dùng chọn thanh toán bằng Paypal, sẽ điều hướng tới trang PaymentWithPaypal
                 if (model.PaymentMethod == "Paypal")
                 {
+                    model.CartItems = cart;
+                    model.TotalAmount = cart.Sum(item => item.TotalPrice);
+
+                    // Lưu thông tin Checkout để sử dụng sau khi PayPal thanh toán
+                    Session["PendingCheckout"] = model;
+
                     return RedirectToAction("PaymentWithPaypal", "PayPal", model);
                 }
 
@@ -104,6 +112,10 @@ namespace _25DH190107_NguyenMinhHuy.Controllers
                     PaymentMethod = model.PaymentMethod,
                     ShippingMethod = model.ShippingMethod,
                     ShippingAddress = model.ShippingAddress,
+
+                    // Thêm dòng này
+                    AddressDelivery = model.ShippingAddress,
+
                     OrderDetails = cart.Select(item => new OrderDetail
                     {
                         ProductID = item.ProductID,
@@ -113,7 +125,7 @@ namespace _25DH190107_NguyenMinhHuy.Controllers
                     }).ToList()
                 };
 
-                //Lưu đơn hàng vào CSDL
+                // Lưu đơn hàng vào CSDL
                 db.Orders.Add(order);
                 db.SaveChanges();
 
@@ -125,9 +137,70 @@ namespace _25DH190107_NguyenMinhHuy.Controllers
             model.CartItems = cart;
             return View(model);
         }
+        [Authorize]
+        public ActionResult CreateOrder()
+        {
+            var model = Session["PendingCheckout"] as CheckoutVM;
+            var cart = GetCartItems();
+
+            if (model == null || cart == null || !cart.Any())
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
+            var user = db.Users.SingleOrDefault(
+                u => u.Username == User.Identity.Name
+            );
+
+            if (user == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var customer = db.Customers.SingleOrDefault(
+                c => c.Username == user.Username
+            );
+
+            if (customer == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var order = new Order
+            {
+                CustomerID = customer.CustomerID,
+                OrderDate = DateTime.Now,
+                TotalAmount = cart.Sum(item => item.TotalPrice),
+                PaymentStatus = "Đã thanh toán",
+                PaymentMethod = "Paypal",
+                ShippingMethod = model.ShippingMethod,
+                ShippingAddress = model.ShippingAddress,
+
+                OrderDetails = cart.Select(item => new OrderDetail
+                {
+                    ProductID = item.ProductID,
+                    Quantity = item.Quantity,
+                    UnitPrice = item.UnitPrice,
+                    TotalPrice = item.TotalPrice
+                }).ToList()
+            };
+
+            db.Orders.Add(order);
+            db.SaveChanges();
+
+            // Xóa thông tin giỏ hàng và Checkout
+            Session["Cart"] = null;
+            Session["PendingCheckout"] = null;
+
+            return RedirectToAction("OrderSuccess",
+                new { id = order.OrderID });
+        }
         public ActionResult OrderSuccess(int id)
         {
-            var order = db.Orders.Include("OrderDetails").SingleOrDefault(o => o.OrderID == id);
+            var order = db.Orders
+                .Include("OrderDetails.Product")
+                .SingleOrDefault(o => o.OrderID == id);
+
             if (order == null)
             {
                 return HttpNotFound();
