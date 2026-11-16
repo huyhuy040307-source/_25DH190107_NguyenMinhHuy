@@ -1,28 +1,43 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@ViewBag.Title - QUẢN LÝ WEBSIDE</title>
+    <title>@ViewBag.Title - QUẢN LÝ WEBSITE</title>
     @Styles.Render("~/Content/css")
+    <link href="~/Content/Site.css?v=@DateTime.Now.Ticks" rel="stylesheet" />
+    <link href="~/Content/myStyle/AdminTheme.css?v=@DateTime.Now.Ticks" rel="stylesheet" />
     @Scripts.Render("~/bundles/modernizr")
 </head>
 <body>
-    <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-dark bg-dark">
+    <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-dark" style="background: linear-gradient(135deg, #2D1E18 0%, #1F140E 100%) !important; border-bottom: 3px solid #8D6E63; box-shadow: 0 4px 12px rgba(42, 24, 16, 0.25);">
         <div class="container">
-            @Html.ActionLink("My Store", "Index", "Admin/Home", new { area = "" }, new { @class = "navbar-brand" })
+            @Html.ActionLink("📖 My Store (Admin)", "Index", "Home", new { area = "Admin" }, new { @class = "navbar-brand fw-bold", style = "color: #FFD59B !important;" })
             <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" title="Toggle navigation" aria-controls="navbarSupportedContent"
                     aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse d-sm-inline-flex justify-content-between">
                 <ul class="navbar-nav flex-grow-1">
-                    <li>@Html.ActionLink("Home", "Index", "Home", new { area = "Admin" }, new { @class = "nav-link" })</li>
-                    <li>@Html.ActionLink("Danh mục", "Index", "Categories", new { area = "Admin" }, new { @class = "nav-link" })</li>
-                    <li>@Html.ActionLink("Sản phẩm", "Index", "Products", new { area = "Admin" }, new { @class = "nav-link" })</li>
-                    <li>@Html.ActionLink("Khách hàng", "Index", "Customer", new { area = "" }, new { @class = "nav-link" })</li>
-                    <li>@Html.ActionLink("Đơn hàng", "Index", "Orders", new { area = "" }, new { @class = "nav-link" })</li>
-                    <li>@Html.ActionLink("Tài khoản", "Index", "Users", new { area = "" }, new { @class = "nav-link" })</li>
+                    <li>@Html.ActionLink("HomeAdmin", "Index", "Home", new { area = "Admin" }, new { @class = "nav-link", style = "color: #F5EFEB !important;" })</li>
+                    <li>@Html.ActionLink("Danh mục", "Index", "Categories", new { area = "Admin" }, new { @class = "nav-link", style = "color: #F5EFEB !important;" })</li>
+                    <li>@Html.ActionLink("Sản phẩm", "Index", "Products", new { area = "Admin" }, new { @class = "nav-link", style = "color: #F5EFEB !important;" })</li>
+                    <li>@Html.ActionLink("Kho hàng", "Inventory", "Products", new { area = "Admin" }, new { @class = "nav-link", style = "color: #F5EFEB !important;" })</li>
+                    <li>@Html.ActionLink("Khách hàng", "Index", "Customers", new { area = "Admin" }, new { @class = "nav-link", style = "color: #F5EFEB !important;" })</li>
+                    <li>@Html.ActionLink("Đơn hàng", "Index", "Orders", new { area = "Admin" }, new { @class = "nav-link", style = "color: #F5EFEB !important;" })</li>
+                    <li>@Html.ActionLink("Tài khoản", "Index", "Users", new { area = "Admin" }, new { @class = "nav-link", style = "color: #F5EFEB !important;" })</li>
+                </ul>
+                <ul class="navbar-nav">
+                    @if (Session["Username"] != null || User.Identity.IsAuthenticated)
+                    {
+                        <li>
+                            @Html.ActionLink("Xin chào " + (Session["FullName"] ?? Session["Username"] ?? User.Identity.Name) + " (Đăng xuất)", "Logout", "Account", new { area = "" }, new { @class = "nav-link text-warning" })
+                        </li>
+                    }
+                    else
+                    {
+                        <li>@Html.ActionLink("Đăng nhập", "Login", "Account", new { area = "" }, new { @class = "nav-link" })</li>
+                    }
                 </ul>
             </div>
         </div>
@@ -31,9 +46,15 @@
         @RenderBody()
         <hr />
         <footer>
-            <p>&copy; @DateTime.Now.Year - Tên ứng dụng </p>
-            <h4>Contact</h4>
-            <p>Tên các thành viên trong nhóm</p>
+            <div class="row">
+                <div class="col-md-6">
+                    <p>&copy; @DateTime.Now.Year - Quản trị hệ thống My Store</p>
+                </div>
+                <div class="col-md-6 text-end">
+                    <h5>Contact</h5>
+                    <p>Nguyễn Minh Huy - 25DH190107</p>
+                </div>
+            </div>
         </footer>
     </div>
 

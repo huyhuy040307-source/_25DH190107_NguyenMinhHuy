@@ -1,109 +1,184 @@
 @model _25DH190107_NguyenMinhHuy.Models.ViewModel.CheckoutVM
 @{
-    ViewBag.Title = "ĐẶT HÀNG";
+    ViewBag.Title = "Xác nhận đặt hàng & Thanh toán";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
 <script>
     function enableAddressEdit() {
-        document.getElementById("shippingAddress").removeAttribute("readonly");
-        document.getElementById("newAddressGroup").style.display = "block";
+        var group = document.getElementById("newAddressGroup");
+        if (group.style.display === "none" || group.style.display === "") {
+            group.style.display = "block";
+            document.getElementById("newShippingAddress").focus();
+        } else {
+            group.style.display = "none";
+        }
     }
 
     function updateShippingAddress() {
         var newAddress = document.getElementById("newShippingAddress").value;
-        if (newAddress) {
-            document.getElementById("shippingAddress").value = newAddress;
+        if (newAddress && newAddress.trim().length > 0) {
+            document.getElementById("shippingAddress").value = newAddress.trim();
         }
-    }</script>
+    }
+</script>
 
-<h2>ĐẶT HÀNG</h2>
-@using (Html.BeginForm("Checkout", "Order", FormMethod.Post, new { @class = "form-horizontal", role = "form" }))
-{
-    @Html.AntiForgeryToken()
-    @Html.HiddenFor(m => m.CustomerID)
-    @Html.HiddenFor(m => m.Username)
-    @Html.HiddenFor(m => m.OrderDate)
-
-    <h3>Thông tin đơn hàng</h3>
-    <div class="form-group">
-        <table class="table">
-            <thead>
-                <tr>
-                    <th colspan="2">Sản phẩm</th>
-                    <th>Số lượng</th>
-                    <th>Đơn giá</th>
-                    <th>Thành tiền</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var item in Model.CartItems)
-                {
-                    <tr>
-                        <td><img src="@item.ProductImage" style="max-height:80px;" /></td>
-                        <td>@item.ProductName</td>
-                        <td>@item.Quantity</td>
-                        <td>@item.UnitPrice.ToString("N0")</td>
-                        <td>@item.TotalPrice.ToString("N0")</td>
-                    </tr>
-                }
-            </tbody>
-        </table>
+<div class="container py-4">
+    <div class="d-flex align-items-center justify-content-between mb-4 pb-2 border-bottom" style="border-bottom-color: #E8DFD8 !important;">
+        <h2 class="fw-bold mb-0" style="color: #4A2E18;">🛒 XÁC NHẬN ĐẶT HÀNG</h2>
+        <a href="@Url.Action("Index", "Cart")" class="btn btn-outline-secondary btn-sm" style="border-color: #8D6E63; color: #5D4037;">
+            ← Quay lại giỏ hàng
+        </a>
     </div>
 
-    <h3>Thông tin giao hàng</h3>
-    <div class="form-group">
-        @Html.LabelFor(m => m.ShippingAddress, new { @class = "control-label col-md-2" })
-        <div class="col-md-10">
-            @Html.TextBoxFor(m => m.ShippingAddress, new
-            {
-                @class = "form-control",
-                @readonly = "readonly",
-                id = "shippingAddress"
-            })
-            @Html.ValidationMessageFor(m => m.ShippingAddress)
-            <button type="button" class="btn btn-link" onclick="enableAddressEdit()">Chỉnh sửa</button>
+    @using (Html.BeginForm("Checkout", "Order", FormMethod.Post, new { id = "checkoutForm", role = "form" }))
+    {
+        @Html.AntiForgeryToken()
+        @Html.HiddenFor(m => m.CustomerID)
+        @Html.HiddenFor(m => m.Username)
+        @Html.HiddenFor(m => m.OrderDate)
+
+        <div class="row g-4">
+            <!-- Cột trái (55%): Thông tin giao hàng & Phương thức thanh toán -->
+            <div class="col-lg-7 col-md-12">
+                <!-- Card 1: Địa chỉ & Vận chuyển -->
+                <div class="card shadow-sm border-0 mb-4" style="border-radius: 12px; background: #fff;">
+                    <div class="card-header bg-white py-3 px-4 border-bottom">
+                        <h5 class="mb-0 fw-bold text-dark">🚚 1. Thông tin nhận hàng & Vận chuyển</h5>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold text-secondary">Địa chỉ nhận hàng:</label>
+                            <div class="input-group">
+                                @Html.TextBoxFor(m => m.ShippingAddress, new
+                                {
+                                    @class = "form-control bg-light",
+                                    @readonly = "readonly",
+                                    id = "shippingAddress",
+                                    style = "font-weight: 500;"
+                                })
+                                <button type="button" class="btn btn-outline-primary" onclick="enableAddressEdit()">
+                                    ✏️ Chỉnh sửa
+                                </button>
+                            </div>
+                            @Html.ValidationMessageFor(m => m.ShippingAddress, "", new { @class = "text-danger small" })
+                        </div>
+
+                        <div class="mb-3 p-3 bg-light rounded-3 border" id="newAddressGroup" style="display:none;">
+                            <label class="form-label fw-semibold text-primary">Nhập địa chỉ giao hàng mới:</label>
+                            <input type="text" id="newShippingAddress" class="form-control mb-2" placeholder="Số nhà, tên đường, phường/xã, quận/huyện, tỉnh/thành phố..." />
+                            <small class="text-muted">Địa chỉ này sẽ được cập nhật tự động khi bạn nhấn nút "Đặt hàng".</small>
+                        </div>
+
+                        <div class="mb-2">
+                            <label class="form-label fw-semibold text-secondary">Phương thức vận chuyển:</label>
+                            <div class="d-flex flex-column gap-2">
+                                <label class="p-3 border rounded-3 d-flex align-items-center gap-2" style="cursor: pointer; background: #fafafa;">
+                                    @Html.RadioButtonFor(m => m.ShippingMethod, "Giao hàng nhanh", new { @checked = "checked" })
+                                    <div>
+                                        <strong class="d-block text-dark">🚀 Giao hàng nhanh (2-3 ngày)</strong>
+                                        <small class="text-muted">Giao tận nơi qua đơn vị vận chuyển đối tác</small>
+                                    </div>
+                                </label>
+                                <label class="p-3 border rounded-3 d-flex align-items-center gap-2" style="cursor: pointer; background: #fafafa;">
+                                    @Html.RadioButtonFor(m => m.ShippingMethod, "Giao hàng tiết kiệm")
+                                    <div>
+                                        <strong class="d-block text-dark">📦 Giao hàng tiết kiệm (4-5 ngày)</strong>
+                                        <small class="text-muted">Chi phí tối ưu, giao giờ hành chính</small>
+                                    </div>
+                                </label>
+                            </div>
+                            @Html.ValidationMessageFor(m => m.ShippingMethod, "", new { @class = "text-danger small" })
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 2: Phương thức thanh toán -->
+                <div class="card shadow-sm border-0 mb-4" style="border-radius: 12px; background: #fff;">
+                    <div class="card-header bg-white py-3 px-4 border-bottom">
+                        <h5 class="mb-0 fw-bold text-dark">💳 2. Phương thức thanh toán</h5>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="d-flex flex-column gap-2">
+                            <label class="p-3 border rounded-3 d-flex align-items-center gap-2" style="cursor: pointer; background: #fafafa;">
+                                @Html.RadioButtonFor(m => m.PaymentMethod, "Tiền mặt", new { @checked = "checked" })
+                                <div>
+                                    <strong class="d-block text-dark">💵 Thanh toán tiền mặt khi nhận hàng (COD)</strong>
+                                    <small class="text-muted">Bạn chỉ thanh toán khi nhận đúng và đủ kiện hàng từ Shipper</small>
+                                </div>
+                            </label>
+
+                            <label class="p-3 border rounded-3 d-flex align-items-center gap-2" style="cursor: pointer; background: #fafafa;">
+                                @Html.RadioButtonFor(m => m.PaymentMethod, "Chuyển khoản")
+                                <div>
+                                    <strong class="d-block text-dark">🏦 Chuyển khoản ngân hàng (QR Code / Internet Banking)</strong>
+                                    <small class="text-muted">Shop sẽ xác nhận thanh toán sau khi tiền vào tài khoản</small>
+                                </div>
+                            </label>
+                        </div>
+                        @Html.ValidationMessageFor(m => m.PaymentMethod, "", new { @class = "text-danger small" })
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cột phải (45%): Tóm tắt đơn hàng & Nút Đặt hàng tô màu nổi bật -->
+            <div class="col-lg-5 col-md-12">
+                <div class="card shadow-sm border-0 mb-4 sticky-top" style="border-radius: 12px; background: #fff; top: 20px;">
+                    <div class="card-header bg-white py-3 px-4 border-bottom d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0 fw-bold text-dark">📦 Đơn hàng của bạn</h5>
+                        <span class="badge bg-primary-subtle text-primary fw-bold">@Model.CartItems.Count món</span>
+                    </div>
+                    <div class="card-body p-4">
+                        <!-- Danh sách sản phẩm thu gọn -->
+                        <div class="mb-3" style="max-height: 280px; overflow-y: auto;">
+                            @foreach (var item in Model.CartItems)
+                            {
+                                <div class="d-flex align-items-center gap-3 py-2 border-bottom">
+                                    <img src="@item.ProductImage" alt="@item.ProductName" style="width: 55px; height: 65px; object-fit: contain; border-radius: 6px; border: 1px solid #eee;" />
+                                    <div class="flex-grow-1" style="min-width: 0;">
+                                        <div class="fw-semibold text-truncate text-dark" title="@item.ProductName">@item.ProductName</div>
+                                        <div class="text-muted small">SL: @item.Quantity × @item.UnitPrice.ToString("N0") đ</div>
+                                    </div>
+                                    <div class="fw-bold text-end" style="min-width: 85px;">
+                                        @item.TotalPrice.ToString("N0") đ
+                                    </div>
+                                </div>
+                            }
+                        </div>
+
+                        <!-- Bảng tính tiền -->
+                        <table class="table table-borderless mb-3" style="font-size: 0.95rem;">
+                            <tr>
+                                <td class="text-secondary ps-0">Tạm tính:</td>
+                                <td class="text-end fw-semibold pe-0">@Model.TotalAmount.ToString("N0") đ</td>
+                            </tr>
+                            <tr>
+                                <td class="text-secondary ps-0">Phí vận chuyển:</td>
+                                <td class="text-end text-success fw-semibold pe-0">Miễn phí</td>
+                            </tr>
+                            <tr class="border-top">
+                                <th class="ps-0 fs-5 text-dark" style="padding-top: 12px;">Tổng thanh toán:</th>
+                                <td class="text-end pe-0" style="padding-top: 12px;">
+                                    <strong class="text-danger fs-4">@Model.TotalAmount.ToString("N0") VNĐ</strong>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <!-- Input ẩn hoặc hiển thị TotalAmount cho model binder -->
+                        @Html.TextBoxFor(m => m.TotalAmount, new { @class = "form-control d-none", @readonly = "readonly" })
+
+                        <!-- Nút ĐẶT HÀNG tông màu gỗ hổ phách ấm áp nổi bật -->
+                        <div class="d-grid mt-3">
+                            <button type="submit" class="btn btn-lg py-3 fw-bold shadow text-white" style="background: linear-gradient(135deg, #B45309 0%, #78350F 100%); border: none; border-radius: 10px; font-size: 1.15rem; letter-spacing: 0.5px; box-shadow: 0 4px 14px rgba(120,53,15,0.35); transition: all 0.2s;" onclick="updateShippingAddress()">
+                                🛒 ĐẶT HÀNG NGAY
+                            </button>
+                        </div>
+                        <div class="text-center text-muted small mt-2">
+                            Nhấn "Đặt hàng ngay" đồng nghĩa với việc bạn đồng ý với điều khoản của My Store.
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-    </div>
-
-    <div class="form-group" id="newAddressGroup" style="display:none;">
-        @Html.Label("Địa chỉ mới", new { @class = "control-label col-md-2" })
-        <div class="col-md-10">
-            <input type="text" id="newShippingAddress" class="form-control" />
-        </div>
-    </div>
-
-    <div class="form-group">
-        @Html.LabelFor(m => m.ShippingMethod, new { @class = "control-label col-md-2" })
-        <div class="col-md-10">
-            @Html.RadioButtonFor(m => m.ShippingMethod, "Giao hàng nhanh") Giao hàng nhanh<br>
-            @Html.RadioButtonFor(m => m.ShippingMethod, "Giao hàng tiết kiệm") Giao hàng tiết kiệm
-            @Html.ValidationMessageFor(m => m.ShippingMethod)
-        </div>
-    </div>
-
-    <div class="form-group">
-        @Html.LabelFor(m => m.PaymentMethod, new { @class = "control-label col-md-2" })
-        <div class="col-md-10">
-            @Html.RadioButtonFor(m => m.PaymentMethod, "Tiền mặt") Tiền mặt<br>
-            @Html.RadioButtonFor(m => m.PaymentMethod, "Paypal") Paypal<br>
-            @Html.RadioButtonFor(m => m.PaymentMethod, "Mua trước trả sau") Mua trước trả sau
-            @Html.ValidationMessageFor(m => m.PaymentMethod)
-        </div>
-    </div>
-
-    <div class="form-group">
-        @Html.LabelFor(m => m.TotalAmount, new { @class = "control-label col-md-2" })
-        <div class="col-md-10">
-            @Html.TextBoxFor(m => m.TotalAmount, new { @class = "form-control", @readonly = "readonly" })
-            @Html.ValidationMessageFor(m => m.TotalAmount)
-        </div>
-    </div>
-
-    <div class="form-group">
-        <div class="col-md-offset-2 col-md-10">
-            <input type="submit" value="Đặt hàng" class="btn btn-default" onclick="updateShippingAddress()" />
-        </div>
-    </div>
-}
-
+    }
+</div>

@@ -1,34 +1,40 @@
-﻿@model _25DH190107_NguyenMinhHuy.Models.Category
+@model _25DH190107_NguyenMinhHuy.Models.Category
 
 @{
-    ViewBag.Title = "Delete";
+    ViewBag.Title = "Xóa danh mục";
     Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+    int prodCount = Model.Products != null ? Model.Products.Count() : 0;
 }
 
-<h2 class="bg-success">XÓA DANH MỤC</h2>
+<h2 class="bg-success text-white p-2">XÓA DANH MỤC</h2>
 
-<h3 class="bg-danger">Bạn có chắc muốn xóa danh mục này không?</h3>
+@if (prodCount > 0)
+{
+    <div class="alert alert-danger mt-3">
+        <strong>Cảnh báo ràng buộc dữ liệu:</strong> Danh mục <strong>@Model.CategoryName</strong> hiện đang có <strong>@prodCount sản phẩm</strong>. Bạn không thể xóa danh mục này khi vẫn còn sản phẩm bên trong!
+    </div>
+}
+else
+{
+    <h4 class="alert alert-warning mt-3">Bạn có chắc muốn xóa danh mục "@Model.CategoryName" không?</h4>
+}
+
 <div>
     <hr />
-   @using (Html.BeginForm())
-   {
+    @using (Html.BeginForm())
+    {
         @Html.AntiForgeryToken()
-<div class="form-horizontal">
-    <div class="form-group">
-        <div class="control-lable col-md-2">Tên danh mục</div>
-        <div class="col-md-10">
-            @Html.DisplayFor(model => model.CategoryName)
-        </div>
-
-        <div class="col-md-offset-2 col-md-10">
-
+        <div class="form-horizontal">
+            <div class="form-group mb-3">
+                <label class="fw-bold">Tên danh mục:</label> @Html.DisplayFor(model => model.CategoryName)
+            </div>
             <div class="form-actions no-color">
-                <input type="submit" value="Xóa" class="btn btn-primary" />
-                @Html.ActionLink("Quay lại danh sách", "Index", null, new { @class = "btn btn-primary btn-sm" })
+                @if (prodCount == 0)
+                {
+                    <input type="submit" value="Xác nhận xóa" class="btn btn-danger" />
+                }
+                @Html.ActionLink("Quay lại danh sách", "Index", null, new { @class = "btn btn-secondary" })
             </div>
         </div>
-    </div>
-</div>
-
-   }
+    }
 </div>

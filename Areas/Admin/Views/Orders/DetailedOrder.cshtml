@@ -1,0 +1,161 @@
+@model _25DH190107_NguyenMinhHuy.Models.Order
+
+@{
+    ViewBag.Title = "Chi tiết đơn hàng #" + Model.OrderID;
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+<h2 class="mt-3 mb-4">CHI TIẾT ĐƠN HÀNG</h2>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+}
+
+<div class="row g-4">
+    <!-- Cột trái (50%): Thông tin đơn hàng & Thao tác trạng thái -->
+    <div class="col-lg-6 col-md-12">
+        <div class="card shadow-sm border-0 mb-3" style="border-radius: 10px; background: #fff; overflow: hidden;">
+            <div class="card-header py-2 px-3 fw-bold d-flex justify-content-between align-items-center" style="background: linear-gradient(135deg, #5D4037 0%, #3E2723 100%) !important; color: #FFFDF9 !important;">
+                <span>📋 THÔNG TIN ĐƠN HÀNG #@Model.OrderID</span>
+                <span class="badge" style="background: #FFFDF9; color: #4A2E18;">@Model.DeliveryStatus</span>
+            </div>
+            <div class="card-body p-3">
+                <table class="table table-borderless align-middle mb-0" style="font-size: 0.95rem;">
+                    <tr>
+                        <th class="text-secondary" style="width: 44%; padding: 6px 0;">Mã đơn hàng:</th>
+                        <td style="padding: 6px 0;"><strong class="text-primary">#@Model.OrderID</strong></td>
+                    </tr>
+                    <tr>
+                        <th class="text-secondary" style="padding: 6px 0;">Ngày đặt hàng:</th>
+                        <td style="padding: 6px 0;">@Model.OrderDate.ToString("dd/MM/yyyy HH:mm")</td>
+                    </tr>
+                    <tr>
+                        <th class="text-secondary" style="padding: 6px 0;">Tên khách hàng:</th>
+                        <td style="padding: 6px 0;">
+                            <strong>@(Model.Customer != null ? Model.Customer.CustomerName : "KH #" + Model.CustomerID)</strong>
+                            @if (Model.Customer != null && !string.IsNullOrEmpty(Model.Customer.CustomerPhone))
+                            {
+                                <span class="text-muted small d-block">📞 @Model.Customer.CustomerPhone</span>
+                            }
+                        </td>
+                    </tr>
+                    <tr>
+                        <th class="text-secondary" style="padding: 6px 0;">Tổng giá trị:</th>
+                        <td style="padding: 6px 0;"><strong class="text-danger fs-5">@Model.TotalAmount.ToString("N0") VNĐ</strong></td>
+                    </tr>
+                    <tr>
+                        <th class="text-secondary" style="padding: 6px 0;">Phương thức thanh toán:</th>
+                        <td style="padding: 6px 0;"><span class="badge bg-light text-dark border">@Model.PaymentMethod</span></td>
+                    </tr>
+                    <tr>
+                        <th class="text-secondary" style="padding: 6px 0;">Trạng thái thanh toán:</th>
+                        <td style="padding: 6px 0;">
+                            @if (Model.PaymentOnlyStatus.IndexOf("Đã thanh toán", StringComparison.OrdinalIgnoreCase) >= 0)
+                            {
+                                <span class="badge bg-success">✓ @Model.PaymentOnlyStatus</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-warning text-dark">⏳ @Model.PaymentOnlyStatus</span>
+                            }
+                        </td>
+                    </tr>
+                    <tr>
+                        <th class="text-secondary" style="padding: 6px 0;">Phương thức giao hàng:</th>
+                        <td style="padding: 6px 0;">@Model.ShippingMethod</td>
+                    </tr>
+                    <tr>
+                        <th class="text-secondary" style="padding: 6px 0;">Tình trạng đơn hàng:</th>
+                        <td style="padding: 6px 0;">
+                            @if (Model.DeliveryStatus == "Chưa giao hàng")
+                            {
+                                <span class="badge bg-warning text-dark">📦 Chưa giao hàng</span>
+                            }
+                            else if (Model.DeliveryStatus == "Đang giao hàng")
+                            {
+                                <span class="badge bg-info text-dark">🛵 Đang giao hàng</span>
+                            }
+                            else if (Model.DeliveryStatus == "Đã giao hàng")
+                            {
+                                <span class="badge bg-success">✓ Đã giao hàng</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-danger">@Model.DeliveryStatus</span>
+                            }
+                        </td>
+                    </tr>
+                    <tr>
+                        <th class="text-secondary" style="padding: 6px 0;">Địa chỉ giao hàng:</th>
+                        <td style="padding: 6px 0;">@Model.ShippingAddress</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- Khung thao tác trạng thái đơn hàng -->
+        <div class="card shadow-sm border-0 p-3 mb-3" style="border-radius: 10px; background: #f8f9fa;">
+            <div class="d-flex gap-2 align-items-center flex-wrap">
+                @if (Model.PaymentOnlyStatus.IndexOf("Đã thanh toán", StringComparison.OrdinalIgnoreCase) < 0 && Model.DeliveryStatus != "Đã hủy")
+                {
+                    using (Html.BeginForm("ConfirmPayment", "Orders", new { area = "Admin", orderId = Model.OrderID, returnUrl = Request.RawUrl }, FormMethod.Post, new { style = "display:inline;" }))
+                    {
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-success fw-bold shadow-sm" onclick="return confirm('Xác nhận đã nhận tiền thanh toán cho đơn hàng #@Model.OrderID?');">
+                            💳 Xác nhận đã nhận tiền
+                        </button>
+                    }
+                }
+                <button type="button" class="btn btn-primary fw-semibold shadow-sm" onclick="document.getElementById('updateStatusPanel').style.display = (document.getElementById('updateStatusPanel').style.display === 'none' ? 'block' : 'none');">
+                    ⚙️ Cập nhật trạng thái
+                </button>
+                @Html.ActionLink("Quay lại danh sách", "Index", "Orders", new { area = "Admin" }, new { @class = "btn btn-secondary shadow-sm" })
+            </div>
+
+            <div id="updateStatusPanel" class="mt-3 pt-3 border-top" style="display: none;">
+                <h6 class="text-success fw-bold mb-3">CẬP NHẬT TRẠNG THÁI ĐƠN HÀNG #@Model.OrderID</h6>
+                @using (Html.BeginForm("UpdateStatus", "Orders", new { area = "Admin" }, FormMethod.Post))
+                {
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="orderId" value="@Model.OrderID" />
+                    <input type="hidden" name="returnUrl" value="@Url.Action("DetailedOrder", "Orders", new { area = "Admin", id = Model.OrderID })" />
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Tình trạng giao hàng:</label>
+                        <select name="deliveryStatus" class="form-select">
+                            <option value="Chưa giao hàng" @(Model.DeliveryStatus == "Chưa giao hàng" ? "selected" : "")>Chưa giao hàng (Đang xử lý)</option>
+                            <option value="Đang giao hàng" @(Model.DeliveryStatus == "Đang giao hàng" ? "selected" : "")>Đang giao hàng (Đang vận chuyển)</option>
+                            <option value="Đã giao hàng" @(Model.DeliveryStatus == "Đã giao hàng" ? "selected" : "")>Đã giao hàng</option>
+                            <option value="Đã hủy" @(Model.DeliveryStatus == "Đã hủy" ? "selected" : "")>Đã hủy</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Trạng thái thanh toán:</label>
+                        <select name="paymentStatus" class="form-select">
+                            <option value="Chưa thanh toán" @(Model.PaymentOnlyStatus == "Chưa thanh toán" ? "selected" : "")>Chưa thanh toán</option>
+                            <option value="Thanh toán tiền mặt" @(Model.PaymentOnlyStatus.Contains("tiền mặt") ? "selected" : "")>Thanh toán tiền mặt (COD)</option>
+                            <option value="Chuyển khoản ngân hàng" @(Model.PaymentOnlyStatus.Contains("Chuyển khoản") ? "selected" : "")>Chuyển khoản ngân hàng</option>
+                            <option value="Đã thanh toán" @(Model.PaymentOnlyStatus == "Đã thanh toán" ? "selected" : "")>Đã thanh toán</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn btn-success fw-bold px-4">Lưu cập nhật</button>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Cột phải (50%): Danh sách chi tiết sản phẩm trong đơn hàng -->
+    <div class="col-lg-6 col-md-12">
+        <div class="card shadow-sm border-0 mb-4" style="border-radius: 10px; background: #fff; overflow: hidden;">
+            <div class="card-header py-2 px-3 fw-bold" style="background: linear-gradient(135deg, #4A2E18 0%, #2D1E18 100%) !important; color: #FFFDF9 !important;">
+                🛒 DANH SÁCH CHI TIẾT SẢN PHẨM
+            </div>
+            <div class="card-body p-0">
+                @Html.Partial("_PVOrderDetailList", Model.OrderDetails)
+            </div>
+        </div>
+    </div>
+</div>

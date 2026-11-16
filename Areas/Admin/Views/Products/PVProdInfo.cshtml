@@ -1,36 +1,35 @@
-﻿@model _25DH190107_NguyenMinhHuy.Models.Product
+@model _25DH190107_NguyenMinhHuy.Models.Product
 
-<head>
-    <style>
-        img {
-            height: 150px;
-            max-width: 150px;
-        }
-    </style>
-</head>
+<link href="~/Content/myStyle/CustomerDetailProduct.css" rel="stylesheet" />
 
-
-<div class="container-fluid">
-    <div class="div-horizontal">
-        <div class="col-md-4">
-            <img src="@Html.DisplayFor(model => model.ProductImage)" />
+<div class="container-fluid pro" style="margin-top: 15px;">
+    <div class="row">
+        <div class="col-md-4 pro-section pro-image text-center">
+            <img src="@Model.ProductImage" style="max-height: 260px; max-width: 100%; object-fit: contain;" />
         </div>
 
-        <div class="col-md-8">
-            <dl>
-                <dt>Tên sản phẩm</dt>
-                <dd>@Html.DisplayFor(model => model.ProductName)</dd>
-
-                <dt>Mô tả</dt>
-                <dd>@Html.DisplayFor(model => model.ProductDescription)</dd>
-
-                <dt>Đơn giá</dt>
-                <dd>@Html.DisplayFor(model => model.ProductPrice)</dd>
-
-                <dt>Danh mục</dt>
-                <dd>@Html.DisplayFor(model => model.Category.CategoryName)</dd>
-            </dl>
+        <div class="col-md-8 pro-section">
+            <div>
+                <h4><strong>@Html.DisplayFor(model => model.ProductName)</strong></h4>
+                <p class="pro-sale">
+                    Đã bán: <strong>@(Model.SoldQuantity > 0 ? Model.SoldQuantity : (Model.OrderDetails != null ? Model.OrderDetails.Sum(od => (int?)od.Quantity) ?? 0 : 0))</strong>
+                    &nbsp;|&nbsp;
+                    Số lượng tồn kho:
+                    @if (Model.Quantity > 0)
+                    {
+                        <span class="badge bg-success">@Model.Quantity sản phẩm</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-danger">Hết hàng (0)</span>
+                    }
+                </p>
+                <p class="pro-price text-danger fw-bold" style="font-size: 1.35rem;">@Model.ProductPrice.ToString("N0") VNĐ</p>
+                <p><strong>Danh mục:</strong> @(Model.Category != null ? Model.Category.CategoryName : "")</p>
+                <hr />
+                <h5><strong>Mô tả sản phẩm</strong></h5>
+                <p>@Model.ProductDescription</p>
+            </div>
         </div>
     </div>
 </div>
-

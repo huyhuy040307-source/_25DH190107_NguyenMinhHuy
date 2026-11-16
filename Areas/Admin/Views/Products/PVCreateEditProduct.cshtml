@@ -1,4 +1,4 @@
-﻿@model _25DH190107_NguyenMinhHuy.Models.Product
+@model _25DH190107_NguyenMinhHuy.Models.Product
 <head>
     <style>
         textarea {
@@ -13,49 +13,64 @@
         }
     </style>
 </head>
-<div class="form-group">
-    <div class="control-label col-md-2">Danh mục</div>
+<div class="form-group mb-3">
+    <div class="control-label col-md-2 fw-bold">Danh mục</div>
     <div class="col-md-10">
         @Html.DropDownList("CategoryID", null, htmlAttributes: new { @class = "form-control" })
         @Html.ValidationMessageFor(model => model.CategoryID, "", new { @class = "text-danger" })
     </div>
 </div>
 
-<div class="form-group">
-    <div class="control-label col-md-2">Tên sản phẩm</div>
+<div class="form-group mb-3">
+    <div class="control-label col-md-2 fw-bold">Tên sản phẩm</div>
     <div class="col-md-10">
         @Html.EditorFor(model => model.ProductName, new { htmlAttributes = new { @class = "form-control" } })
         @Html.ValidationMessageFor(model => model.ProductName, "", new { @class = "text-danger" })
     </div>
 </div>
 
-<div class="form-group">
-    <div class="control-label col-md-2">Mô tả</div>
+<div class="form-group mb-3">
+    <div class="control-label col-md-2 fw-bold">Mô tả</div>
     <div class="col-md-10">
-        @Html.TextAreaFor(model => model.ProductDescription, new { htmlAttributes = new { @class = "form-control" } })
+        @Html.TextAreaFor(model => model.ProductDescription, new { @class = "form-control" })
         @Html.ValidationMessageFor(model => model.ProductDescription, "", new { @class = "text-danger" })
     </div>
 </div>
 
-<div class="form-group">
-    <div class="control-label col-md-2">Đơn giá</div>
+<div class="form-group mb-3">
+    <div class="control-label col-md-2 fw-bold">Đơn giá</div>
     <div class="col-md-10">
-        @Html.EditorFor(model => model.ProductPrice, new { htmlAttributes = new { @class = "form-control" } })
+        @Html.EditorFor(model => model.ProductPrice, new { htmlAttributes = new { @class = "form-control", type = "number", step = "0.01", min = "1" } })
         @Html.ValidationMessageFor(model => model.ProductPrice, "", new { @class = "text-danger" })
     </div>
 </div>
 
-<div class="form-group">
-    <div class="control-label col-md-2">Hình ảnh</div>
+<div class="form-group mb-3">
+    <div class="control-label col-md-2 fw-bold">Số lượng tồn kho</div>
     <div class="col-md-10">
-        @Html.EditorFor(model => model.ProductImage, new { htmlAttributes = new { @class = "form-control" } })
+        @Html.EditorFor(model => model.Quantity, new { htmlAttributes = new { @class = "form-control", type = "number", min = "0" } })
+        @Html.ValidationMessageFor(model => model.Quantity, "", new { @class = "text-danger" })
+    </div>
+</div>
+
+<div class="form-group mb-3">
+    <div class="control-label col-md-2 fw-bold">Hình ảnh (Link hoặc Upload)</div>
+    <div class="col-md-10">
+        @Html.EditorFor(model => model.ProductImage, new { htmlAttributes = new { @class = "form-control mb-2", placeholder = "Nhập đường dẫn ảnh hoặc chọn file bên dưới..." } })
+        <input type="file" name="UploadImage" class="form-control" accept="image/*" />
+        @if (Model != null && !string.IsNullOrEmpty(Model.ProductImage))
+        {
+            <div class="mt-2">
+                <img src="@Model.ProductImage" style="height: 80px; max-width: 80px; object-fit: contain; border: 1px solid #ddd; padding: 3px;" />
+            </div>
+        }
         @Html.ValidationMessageFor(model => model.ProductImage, "", new { @class = "text-danger" })
     </div>
 </div>
 
-<div class="form-group">
+<div class="form-group mt-3">
     <div class="col-md-offset-2 col-md-10">
-        <input type="submit" value="Lưu" class="btn btn-primary" />
-        @Html.ActionLink("Quay lại danh sách", "Index", null, new { @class = "btn btn-primary btn-sm" })
+        <input type="submit" value="Lưu sản phẩm" class="btn btn-primary" />
+        @Html.ActionLink("Quay lại danh sách", "Index", null, new { @class = "btn btn-secondary ms-2" })
     </div>
 </div>

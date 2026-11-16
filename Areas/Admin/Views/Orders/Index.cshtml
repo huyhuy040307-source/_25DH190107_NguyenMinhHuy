@@ -1,0 +1,132 @@
+@model PagedList.IPagedList<_25DH190107_NguyenMinhHuy.Models.Order>
+@using PagedList.Mvc
+
+@{
+    ViewBag.Title = "Danh sách đơn hàng";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+    string selectedPayment = ViewBag.PaymentStatus as string ?? "";
+    string selectedStatus = ViewBag.SelectedStatus as string ?? "";
+}
+
+<link href="~/Content/PagedList.css" rel="stylesheet" type="text/css" />
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success mt-2">@TempData["SuccessMessage"]</div>
+}
+
+<!-- Khung tìm kiếm đơn hàng theo đúng Slide 3 -->
+@using (Html.BeginForm("Index", "Orders", new { area = "Admin" }, FormMethod.Get, new { @class = "mb-4 mt-3" }))
+{
+    <div class="row align-items-end">
+        <div class="col-md-3">
+            <label class="form-label fw-bold">Tên khách hàng</label>
+            <input type="text" name="searchName" value="@ViewBag.SearchName" class="form-control" placeholder="Nhập tên khách hàng..." />
+        </div>
+        <div class="col-md-3">
+            <label class="form-label fw-bold">Trạng thái thanh toán</label>
+            <select name="paymentStatus" class="form-control">
+                <option value="" @(string.IsNullOrEmpty(selectedPayment) ? "selected" : "")>-- Tất cả --</option>
+                <option value="Chưa thanh toán" @(selectedPayment == "Chưa thanh toán" ? "selected" : "")>Chưa thanh toán</option>
+                <option value="Thanh toán tiền mặt" @(selectedPayment == "Thanh toán tiền mặt" ? "selected" : "")>Thanh toán tiền mặt (COD)</option>
+                <option value="Chuyển khoản" @(selectedPayment == "Chuyển khoản" ? "selected" : "")>Chuyển khoản ngân hàng</option>
+                <option value="Đã thanh toán" @(selectedPayment == "Đã thanh toán" ? "selected" : "")>Đã thanh toán</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <label class="form-label fw-bold">Tình trạng giao</label>
+            <select name="status" class="form-control">
+                <option value="" @(string.IsNullOrEmpty(selectedStatus) ? "selected" : "")>-- Tất cả --</option>
+                <option value="Chưa giao hàng" @(selectedStatus == "Chưa giao hàng" ? "selected" : "")>Chưa giao hàng</option>
+                <option value="Đang giao hàng" @(selectedStatus == "Đang giao hàng" ? "selected" : "")>Đang giao hàng</option>
+                <option value="Đã giao hàng" @(selectedStatus == "Đã giao hàng" ? "selected" : "")>Đã giao hàng</option>
+                <option value="Đã hủy" @(selectedStatus == "Đã hủy" ? "selected" : "")>Đã hủy</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <label class="form-label fw-bold">Ngày đặt hàng</label>
+            <input type="date" name="orderDate" value="@ViewBag.OrderDate" class="form-control" />
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-primary">Tìm kiếm</button>
+            <a href="@Url.Action("Index", "Orders", new { area = "Admin" })" class="btn btn-outline-secondary">Xóa</a>
+        </div>
+    </div>
+}
+
+<h2 class="admin-page-title mb-3">DANH SÁCH ĐƠN HÀNG</h2>
+
+@if (Model == null || !Model.Any())
+{
+    <div class="alert alert-warning text-center fw-bold">KHÔNG CÓ</div>
+}
+else
+{
+    <table class="table table-bordered table-striped align-middle">
+        <thead>
+            <tr>
+                <th>Ngày đặt hàng</th>
+                <th>Tên khách hàng</th>
+                <th>Tổng giá trị</th>
+                <th>Trạng thái thanh toán</th>
+                <th>Phương thức giao hàng</th>
+                <th>Tình trạng đơn hàng</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.OrderDate.ToString("dd/MM/yyyy")</td>
+                    <td>@(item.Customer != null ? item.Customer.CustomerName : "KH #" + item.CustomerID)</td>
+                    <td>@item.TotalAmount.ToString("N2")</td>
+                    <td>@item.PaymentOnlyStatus</td>
+                    <td>@item.ShippingMethod</td>
+                    <td>
+                        @if (item.DeliveryStatus == "Chưa giao hàng")
+                        {
+                            <span class="badge bg-warning text-dark">Chưa giao hàng</span>
+                        }
+                        else if (item.DeliveryStatus == "Đang giao hàng")
+                        {
+                            <span class="badge bg-info text-dark">Đang giao hàng</span>
+                        }
+                        else if (item.DeliveryStatus == "Đã giao hàng")
+                        {
+                            <span class="badge bg-success">Đã giao hàng</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-danger">@item.DeliveryStatus</span>
+                        }
+                    </td>
+                    <td class="text-nowrap">
+                        @Html.ActionLink("Chi tiết đơn hàng", "DetailedOrder", "Orders", new { area = "Admin", id = item.OrderID }, new { @class = "btn btn-info btn-sm text-white" })
+                        @if (item.PaymentOnlyStatus.IndexOf("Đã thanh toán", StringComparison.OrdinalIgnoreCase) < 0 && item.DeliveryStatus != "Đã hủy")
+                        {
+                            using (Html.BeginForm("ConfirmPayment", "Orders", new { area = "Admin", orderId = item.OrderID, returnUrl = Request.RawUrl }, FormMethod.Post, new { style = "display:inline;" }))
+                            {
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-success btn-sm ms-1" onclick="return confirm('Xác nhận đã nhận tiền thanh toán cho đơn hàng #@item.OrderID?');">
+                                    💳 Xác nhận thanh toán
+                                </button>
+                            }
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <div class="pagination-container">
+        @Html.PagedListPager(Model, page => Url.Action("Index", new
+        {
+            page,
+            searchName = ViewBag.SearchName,
+            paymentStatus = ViewBag.PaymentStatus,
+            orderDate = ViewBag.OrderDate,
+            status = ViewBag.SelectedStatus
+        }))
+    </div>
+}

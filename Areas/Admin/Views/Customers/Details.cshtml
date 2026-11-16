@@ -1,0 +1,30 @@
+@model _25DH190107_NguyenMinhHuy.Models.Customer
+
+@{
+    ViewBag.Title = "Chi tiết khách hàng";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+<h2 class="bg-success text-white p-2" style="border-radius: 4px;">THÔNG TIN CHI TIẾT KHÁCH HÀNG</h2>
+
+<div class="card p-3 mt-3 mb-4" style="border: 1px solid #ddd; border-radius: 6px; background: #f9f9f9;">
+    <div class="row">
+        <div class="col-md-6">
+            <p><strong>Mã khách hàng:</strong> #@Model.CustomerID</p>
+            <p><strong>Họ và tên:</strong> <span class="text-primary fw-bold">@Model.CustomerName</span></p>
+            <p><strong>Tên đăng nhập:</strong> @Model.Username</p>
+        </div>
+        <div class="col-md-6">
+            <p><strong>Số điện thoại:</strong> @Model.CustomerPhone</p>
+            <p><strong>Email:</strong> @Model.CustomerEmail</p>
+            <p><strong>Địa chỉ:</strong> @Model.CustomerAddress</p>
+        </div>
+    </div>
+    <div>
+        @Html.ActionLink("Quay lại danh sách khách hàng", "Index", null, new { @class = "btn btn-secondary btn-sm" })
+    </div>
+</div>
+
+<h4 class="bg-info p-2" style="border-radius: 4px;">DANH SÁCH ĐƠN HÀNG CỦA KHÁCH HÀNG "@Model.CustomerName.ToUpper()"</h4>
+
+@Html.Partial("_PVCustomerOrders", Model.Orders)

@@ -3,33 +3,116 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@ViewBag.Title - My ASP.NET Application</title>
+    <title>@ViewBag.Title - My Store</title>
     @Styles.Render("~/Content/css")
+    <link href="~/Content/Site.css?v=@DateTime.Now.Ticks" rel="stylesheet" />
     @Scripts.Render("~/bundles/modernizr")
 </head>
 <body>
-    <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-dark bg-dark">
+    @{
+        var cartObj = Session["Cart"] as _25DH190107_NguyenMinhHuy.Models.ViewModel.Cart;
+        int cartCount = cartObj != null && cartObj.Items != null ? cartObj.Items.Sum(i => i.Quantity) : 0;
+
+        List<_25DH190107_NguyenMinhHuy.Models.Category> navCategories = new List<_25DH190107_NguyenMinhHuy.Models.Category>();
+        try
+        {
+            using (var dbNav = new _25DH190107_NguyenMinhHuy.Models.MyStoreEntities())
+            {
+                navCategories = dbNav.Categories.ToList();
+            }
+        }
+        catch { }
+    }
+    <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-dark navbar-wood" style="background: linear-gradient(135deg, #3E2723 0%, #2A1810 100%) !important; border-bottom: 3px solid #8D6E63; box-shadow: 0 4px 12px rgba(42, 24, 16, 0.25);">
         <div class="container">
-            @Html.ActionLink("My Store", "Index", "Home", new { area = "" }, new { @class = "navbar-brand" })
+            @Html.ActionLink("📖 My Store", "Index", "Home", new { area = "" }, new { @class = "navbar-brand fw-bold", style = "color: #FFD59B !important;" })
             <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" title="Toggle navigation" aria-controls="navbarSupportedContent"
                     aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse d-sm-inline-flex justify-content-between">
-                <ul class="navbar-nav flex-grow-1">
-                    <li>@Html.ActionLink("Trang chủ", "Index", "Home", new { area = "" }, new { @class = "nav-link" })</li>
-                    <li>@Html.ActionLink("Giỏ hàng", "Index", "Cart", new { area = "" }, new { @class = "nav-link" })</li>
+                <ul class="navbar-nav flex-grow-1 align-items-center">
+                    <li class="nav-item">
+                        @Html.ActionLink("Trang chủ", "Index", "Home", new { area = "" }, new { @class = "nav-link", style = "color: #F5EFEB !important;" })
+                    </li>
+                    <li class="nav-item">
+                        @Html.ActionLink("Sản phẩm", "ProductCategory", "Home", new { area = "" }, new { @class = "nav-link", style = "color: #F5EFEB !important;" })
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" style="color: #F5EFEB !important;" href="#" id="navbarCategoryDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            📚 Danh mục
+                        </a>
+                        <ul class="dropdown-menu shadow" aria-labelledby="navbarCategoryDropdown" style="max-height: 420px; overflow-y: auto;">
+                            <li>
+                                <a class="dropdown-item fw-bold text-success py-2" href="@Url.Action("ProductCategory", "Home", new { area = "" })">
+                                    🔍 Xem tất cả danh mục
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            @foreach (var cat in navCategories)
+                            {
+                                <li>
+                                    <a class="dropdown-item py-1" href="@Url.Action("ProductCategory", "Home", new { area = "", categoryId = cat.CategoryID })">
+                                        @cat.CategoryName
+                                    </a>
+                                </li>
+                            }
+                        </ul>
+                    </li>
+                </ul>
+
+                <ul class="navbar-nav align-items-center">
+                    <li class="nav-item me-2">
+                        <a href="@Url.Action("Index", "Cart", new { area = "" })" class="nav-link fw-semibold" style="color: #FFD59B !important;">
+                            🛒 Giỏ hàng <span class="badge rounded-pill" style="background-color: #B45309;">@cartCount</span>
+                        </a>
+                    </li>
                     @if (Session["Username"] != null || User.Identity.IsAuthenticated)
                     {
-                        <li><span class="nav-link text-light">Xin chào, @(Session["Username"] ?? User.Identity.Name)</span></li>
-                        <li>@Html.ActionLink("Đăng xuất", "Logout", "Account", new { area = "" }, new { @class = "nav-link" })</li>
+                        var role = (Session["UserRole"] as string ?? "").Trim();
+                        bool isAdmin = role.Equals("Admin", StringComparison.OrdinalIgnoreCase) || role.Equals("A", StringComparison.OrdinalIgnoreCase);
+                        string displayName = (Session["FullName"] ?? Session["Username"] ?? User.Identity.Name).ToString();
+
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle fw-bold rounded px-3 py-1" style="color: #FFD59B !important; background-color: rgba(255,255,255,0.12) !important; border: 1px solid rgba(255,213,155,0.3);" href="#" id="userMenuDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                👤 @displayName @(isAdmin ? " (Admin)" : "")
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="userMenuDropdown">
+                                <li class="dropdown-header text-uppercase small text-muted">Tài khoản</li>
+                                <li>
+                                    <a class="dropdown-item py-2" href="@Url.Action("ProfileInfo", "Account", new { area = "" })">
+                                        👤 Hồ sơ khách hàng
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item py-2" href="@Url.Action("MyOrder", "Order", new { area = "" })">
+                                        📦 Lịch sử giao dịch / mua hàng
+                                    </a>
+                                </li>
+                                @if (isAdmin)
+                                {
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li class="dropdown-header text-uppercase small text-warning">Quản trị</li>
+                                    <li>
+                                        <a class="dropdown-item py-2 text-warning fw-bold bg-dark" href="@Url.Action("Index", "Home", new { area = "Admin" })">
+                                            ⚙️ Trang Quản trị (Admin)
+                                        </a>
+                                    </li>
+                                }
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <a class="dropdown-item py-2 text-danger fw-semibold" href="@Url.Action("Logout", "Account", new { area = "" })">
+                                        🚪 Đăng xuất
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
                     }
                     else
                     {
-                        <li>@Html.ActionLink("Đăng nhập", "Login", "Account", new { area = "" }, new { @class = "nav-link" })</li>
-                        <li>@Html.ActionLink("Đăng ký", "Register", "Account", new { area = "" }, new { @class = "nav-link" })</li>
+                        <li class="nav-item">@Html.ActionLink("Đăng nhập", "Login", "Account", new { area = "" }, new { @class = "nav-link" })</li>
+                        <li class="nav-item">@Html.ActionLink("Đăng ký", "Register", "Account", new { area = "" }, new { @class = "nav-link btn btn-outline-light btn-sm ms-2 px-2 py-1" })</li>
                     }
-                    <li>@Html.ActionLink("Quản trị (Admin)", "Index", "Products", new { area = "Admin" }, new { @class = "nav-link" })</li>
                 </ul>
             </div>
         </div>
@@ -38,7 +121,7 @@
         @RenderBody()
         <hr />
         <footer>
-            <p>&copy; @DateTime.Now.Year - My ASP.NET Application</p>
+            <p>&copy; @DateTime.Now.Year - My Store E-Commerce Application</p>
         </footer>
     </div>
 

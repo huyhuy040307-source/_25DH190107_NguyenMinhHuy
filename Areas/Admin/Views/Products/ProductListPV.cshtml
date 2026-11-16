@@ -4,8 +4,9 @@
 <head>
     <style>
         img {
-            height: 150px;
-            max-width: 150px;
+            height: 120px;
+            max-width: 120px;
+            object-fit: contain;
         }
         .pagination-container {
             display: flex;
@@ -15,43 +16,64 @@
     <link href="~/Content/PagedList.css" rel="stylesheet" type="text/css" />
 </head>
 
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success mt-2">@TempData["SuccessMessage"]</div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger mt-2">⚠️ @TempData["Error"]</div>
+}
+
 @if (Model.Products != null && Model.Products.Any())
 {
-    <h2 class="bg-success">DANH SÁCH SẢN PHẨM</h2>
+    <h2 class="bg-success text-white p-2 mt-2">DANH SÁCH SẢN PHẨM</h2>
 
-    <table class="table bg-info">
-        <tr>
-            <th class="bg-success col-md-2"> Hình ảnh </th>
-            <th class="bg-success col-md-3"> Tên sản phẩm </th>
-            <th class="bg-success col-md-1"> Đơn giá </th>
-            <th class="bg-success col-md-2"> Danh mục </th>
-            <th class="bg-success col-md-4"></th>
-        </tr>
-
-        @foreach (var item in Model.Products)
-        {
+    <table class="table table-bordered bg-info align-middle">
+        <thead>
             <tr>
-                <td>
-                    <img src="@Html.DisplayFor(modelItem => item.ProductImage)" />
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.ProductName)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.ProductPrice)
-                </td>
-
-                <td>
-                    @Html.DisplayFor(modelItem => item.Category.CategoryName)
-                </td>
-                <td>
-                    @Html.ActionLink("Sửa", "Edit", new { id = item.ProductID }, new { @class = "btn btn-primary btn-sm" }) |
-                    @Html.ActionLink("Chi tiết", "Details", new { id = item.ProductID }, new { @class = "btn btn-primary btn-sm" }) |
-                    @Html.ActionLink("Xóa", "Delete", new { id = item.ProductID }, new { @class = "btn btn-primary btn-sm" })
-                </td>
+                <th class="bg-success text-white col-md-2">Hình ảnh</th>
+                <th class="bg-success text-white col-md-3">Tên sản phẩm</th>
+                <th class="bg-success text-white col-md-2">Đơn giá</th>
+                <th class="bg-success text-white col-md-1 text-center">Số lượng tồn</th>
+                <th class="bg-success text-white col-md-2">Chủng loại</th>
+                <th class="bg-success text-white col-md-2 text-center">Thao tác</th>
             </tr>
-        }
-
+        </thead>
+        <tbody>
+            @foreach (var item in Model.Products)
+            {
+                <tr>
+                    <td>
+                        <img src="@Html.DisplayFor(modelItem => item.ProductImage)" />
+                    </td>
+                    <td>
+                        <strong>@Html.DisplayFor(modelItem => item.ProductName)</strong>
+                    </td>
+                    <td class="text-danger fw-bold">
+                        @item.ProductPrice.ToString("N0") đ
+                    </td>
+                    <td class="text-center">
+                        @if (item.Quantity > 0)
+                        {
+                            <span class="badge bg-success">@item.Quantity</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-danger">Hết hàng (0)</span>
+                        }
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Category.CategoryName)
+                    </td>
+                    <td class="text-center">
+                        @Html.ActionLink("Sửa", "Edit", new { id = item.ProductID }, new { @class = "btn btn-primary btn-sm" })
+                        @Html.ActionLink("Chi tiết", "Details", new { id = item.ProductID }, new { @class = "btn btn-info btn-sm text-white" })
+                        @Html.ActionLink("Xóa", "Delete", new { id = item.ProductID }, new { @class = "btn btn-danger btn-sm" })
+                    </td>
+                </tr>
+            }
+        </tbody>
     </table>
 
     <!-- Hiển thị phân trang -->
@@ -68,12 +90,10 @@
 }
 else
 {
-    <p>Không tìm được sản phẩm nào phù hợp.</p>
+    <p class="alert alert-warning mt-3">Không tìm được sản phẩm nào phù hợp.</p>
 }
 
-<div class="form-group">
-    <div class="col-md-offset-3 col-md-9">
-        @Html.ActionLink("Thêm mới", "Create", null,
-       new { @class = "btn btn-primary" })
-    </div>
+<div class="form-group mt-2">
+    @Html.ActionLink("+ Thêm sản phẩm mới", "Create", null, new { @class = "btn btn-primary" })
+    @Html.ActionLink("Quản lý kho hàng (Tồn kho / Cần nhập)", "Inventory", "Products", new { area = "Admin" }, new { @class = "btn btn-warning ms-2" })
 </div>

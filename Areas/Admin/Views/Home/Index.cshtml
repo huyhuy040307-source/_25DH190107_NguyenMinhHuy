@@ -1,8 +1,70 @@
-﻿
+@model IEnumerable<_25DH190107_NguyenMinhHuy.Areas.Admin.Controllers.CategoryStatisticVM>
+
 @{
-    ViewBag.Title = "Index";
+    ViewBag.Title = "Trang quản trị & Thống kê";
     Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
 }
 
-<h2>TRANG QUẢN TRỊ</h2>
+<h2 class="bg-success text-white p-2 mt-2" style="border-radius: 4px;">TRANG QUẢN TRỊ & THỐNG KÊ HỆ THỐNG</h2>
 
+<div class="row text-center mt-3 mb-4">
+    <div class="col-md-3 mb-2">
+        <div class="card p-3 shadow-sm" style="border-top: 4px solid #5D4037 !important;">
+            <h6 class="text-secondary fw-semibold">Tổng Danh Mục</h6>
+            <h3 class="fw-bold my-2" style="color: #5D4037;">@ViewBag.TotalCategories</h3>
+            <a href="@Url.Action("Index", "Categories", new { area = "Admin" })" class="btn btn-sm btn-outline-primary">Quản lý danh mục</a>
+        </div>
+    </div>
+    <div class="col-md-3 mb-2">
+        <div class="card p-3 shadow-sm" style="border-top: 4px solid #B45309 !important;">
+            <h6 class="text-secondary fw-semibold">Tổng Sản Phẩm</h6>
+            <h3 class="fw-bold my-2" style="color: #B45309;">@ViewBag.TotalProducts</h3>
+            <a href="@Url.Action("Index", "Products", new { area = "Admin" })" class="btn btn-sm btn-outline-primary">Quản lý sản phẩm</a>
+        </div>
+    </div>
+    <div class="col-md-3 mb-2">
+        <div class="card p-3 shadow-sm" style="border-top: 4px solid #8D6E63 !important;">
+            <h6 class="text-secondary fw-semibold">Tổng Đơn Hàng</h6>
+            <h3 class="fw-bold my-2" style="color: #8D6E63;">@ViewBag.TotalOrders</h3>
+            <a href="@Url.Action("Index", "Orders", new { area = "Admin" })" class="btn btn-sm btn-outline-primary">Quản lý đơn hàng</a>
+        </div>
+    </div>
+    <div class="col-md-3 mb-2">
+        <div class="card p-3 shadow-sm" style="border-top: 4px solid #A0522D !important;">
+            <h6 class="text-secondary fw-semibold">Tổng Doanh Thu</h6>
+            <h3 class="fw-bold my-2" style="color: #A0522D;">@(((decimal)ViewBag.TotalRevenue).ToString("N0")) đ</h3>
+            <a href="@Url.Action("Inventory", "Products", new { area = "Admin" })" class="btn btn-sm btn-outline-danger">Kho hàng (Hết: @ViewBag.OutOfStockCount)</a>
+        </div>
+    </div>
+</div>
+
+<h4 class="admin-page-title">THỐNG KÊ HÀNG HÓA TỪNG LOẠI</h4>
+
+<table class="table table-bordered table-striped align-middle">
+    <thead>
+        <tr>
+            <th>LOẠI HÀNG (DANH MỤC)</th>
+            <th class="text-center">SỐ LƯỢNG SẢN PHẨM</th>
+            <th class="text-center">TỔNG TỒN KHO</th>
+            <th class="text-end">GIÁ CAO NHẤT</th>
+            <th class="text-end">GIÁ THẤP NHẤT</th>
+            <th class="text-end">GIÁ TRUNG BÌNH</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Model != null && Model.Any())
+        {
+            foreach (var item in Model)
+            {
+                <tr>
+                    <td><strong>@item.CategoryName</strong></td>
+                    <td class="text-center">@item.ProductCount</td>
+                    <td class="text-center">@item.TotalStock</td>
+                    <td class="text-end">@item.MaxPrice.ToString("N0") đ</td>
+                    <td class="text-end">@item.MinPrice.ToString("N0") đ</td>
+                    <td class="text-end">@item.AvgPrice.ToString("N0") đ</td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>

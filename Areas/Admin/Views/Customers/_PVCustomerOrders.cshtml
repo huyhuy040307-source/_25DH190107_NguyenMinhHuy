@@ -1,0 +1,57 @@
+@model IEnumerable<_25DH190107_NguyenMinhHuy.Models.Order>
+
+@if (Model != null && Model.Any())
+{
+    <table class="table table-bordered table-striped">
+        <thead class="bg-success text-white">
+            <tr>
+                <th>Mã đơn hàng</th>
+                <th>Ngày đặt hàng</th>
+                <th>Tổng giá trị</th>
+                <th>Trạng thái thanh toán</th>
+                <th>Phương thức giao hàng</th>
+                <th>Tình trạng giao hàng</th>
+                <th>Địa chỉ giao hàng</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var order in Model.OrderByDescending(o => o.OrderDate).ThenByDescending(o => o.OrderID))
+            {
+                <tr>
+                    <td><strong>#@order.OrderID</strong></td>
+                    <td>@order.OrderDate.ToString("dd/MM/yyyy")</td>
+                    <td class="text-danger fw-bold">@order.TotalAmount.ToString("N0") đ</td>
+                    <td>@order.PaymentOnlyStatus</td>
+                    <td>@order.ShippingMethod</td>
+                    <td>
+                        @if (order.DeliveryStatus == "Đã giao hàng")
+                        {
+                            <span class="badge bg-success">@order.DeliveryStatus</span>
+                        }
+                        else if (order.DeliveryStatus == "Đang giao hàng")
+                        {
+                            <span class="badge bg-info text-dark">@order.DeliveryStatus</span>
+                        }
+                        else if (order.DeliveryStatus == "Đã hủy")
+                        {
+                            <span class="badge bg-danger">@order.DeliveryStatus</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-warning text-dark">@order.DeliveryStatus</span>
+                        }
+                    </td>
+                    <td>@order.ShippingAddress</td>
+                    <td>
+                        @Html.ActionLink("Chi tiết đơn hàng", "DetailedOrder", "Orders", new { area = "Admin", id = order.OrderID }, new { @class = "btn btn-info btn-sm text-white" })
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <div class="alert alert-info">Khách hàng này chưa có đơn hàng nào.</div>
+}

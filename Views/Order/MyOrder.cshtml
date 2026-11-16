@@ -1,0 +1,275 @@
+@model IEnumerable<_25DH190107_NguyenMinhHuy.Models.Order>
+
+@{
+    ViewBag.Title = "Đơn hàng của tôi";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    string selectedStatus = ViewBag.SelectedStatus as string ?? "";
+    string searchTerm = ViewBag.SearchTerm as string ?? "";
+    string expandStatus = ViewBag.ExpandStatus as string ?? "";
+}
+
+<style>
+    .myorder-tabs {
+        display: flex;
+        border-bottom: 2px solid #E8DFD8;
+        background: #fff;
+        border-radius: 8px 8px 0 0;
+        margin-bottom: 16px;
+        overflow-x: auto;
+    }
+    .myorder-tab {
+        flex: 1;
+        text-align: center;
+        padding: 12px 10px;
+        color: #795548;
+        text-decoration: none;
+        font-weight: 500;
+        border-bottom: 3px solid transparent;
+        white-space: nowrap;
+        transition: all 0.2s ease;
+    }
+    .myorder-tab:hover {
+        color: #B45309;
+        background: #FDFBF7;
+    }
+    .myorder-tab.active {
+        color: #8B4513;
+        border-bottom-color: #8B4513;
+        font-weight: 700;
+        background: #FFFDF9;
+    }
+    .order-card {
+        background: #fff;
+        border: 1px solid #E8DFD8;
+        border-radius: 10px;
+        padding: 16px 20px;
+        margin-bottom: 16px;
+        box-shadow: 0 2px 8px rgba(93,64,55,0.06);
+    }
+    .order-item-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 0;
+        border-bottom: 1px solid #f1f3f5;
+    }
+    .order-item-left {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+    }
+    .order-img-box {
+        position: relative;
+        width: 70px;
+        height: 70px;
+        border: 1px solid #eee;
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #fafafa;
+    }
+    .order-img-box img {
+        max-height: 64px;
+        max-width: 64px;
+        object-fit: contain;
+    }
+    .order-qty-badge {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        background: #e9ecef;
+        color: #495057;
+        font-size: 0.75rem;
+        font-weight: 600;
+        padding: 1px 5px;
+        border-top-left-radius: 4px;
+    }
+</style>
+
+<div class="container py-3" style="background: #f5f5fa; border-radius: 8px; padding: 20px;">
+    <h3 class="mb-3 fw-bold">Đơn hàng của tôi</h3>
+
+    @if (TempData["OrderMessage"] != null)
+    {
+        <div class="alert alert-success">@TempData["OrderMessage"]</div>
+    }
+    @if (TempData["OrderError"] != null)
+    {
+        <div class="alert alert-danger">@TempData["OrderError"]</div>
+    }
+
+    <!-- Các Tab trạng thái đơn hàng theo đúng Slide 6 & 7 -->
+    <div class="myorder-tabs">
+        <a href="@Url.Action("MyOrder", "Order", new { status = "", searchTerm = searchTerm })" class="myorder-tab @(string.IsNullOrEmpty(selectedStatus) ? "active" : "")">Tất cả đơn</a>
+        <a href="@Url.Action("MyOrder", "Order", new { status = "Chờ thanh toán", searchTerm = searchTerm })" class="myorder-tab @(selectedStatus == "Chờ thanh toán" ? "active" : "")">Chờ thanh toán</a>
+        <a href="@Url.Action("MyOrder", "Order", new { status = "Chưa giao hàng", searchTerm = searchTerm })" class="myorder-tab @(selectedStatus == "Chưa giao hàng" ? "active" : "")">Đang xử lý (Chưa giao)</a>
+        <a href="@Url.Action("MyOrder", "Order", new { status = "Đang giao hàng", searchTerm = searchTerm })" class="myorder-tab @(selectedStatus == "Đang giao hàng" ? "active" : "")">Đang vận chuyển (Đang giao)</a>
+        <a href="@Url.Action("MyOrder", "Order", new { status = "Đã giao hàng", searchTerm = searchTerm })" class="myorder-tab @(selectedStatus == "Đã giao hàng" ? "active" : "")">Đã giao</a>
+        <a href="@Url.Action("MyOrder", "Order", new { status = "Đã hủy", searchTerm = searchTerm })" class="myorder-tab @(selectedStatus == "Đã hủy" ? "active" : "")">Đã huỷ</a>
+    </div>
+
+    <!-- Thanh tìm kiếm đơn hàng theo Mã đơn hàng hoặc Tên sản phẩm -->
+    @using (Html.BeginForm("MyOrder", "Order", FormMethod.Get, new { @class = "mb-3" }))
+    {
+        <input type="hidden" name="status" value="@selectedStatus" />
+        <div class="input-group">
+            <span class="input-group-text bg-white">🔍</span>
+            <input type="text" name="searchTerm" value="@searchTerm" class="form-control" placeholder="Tìm đơn hàng theo Mã đơn hàng hoặc Tên sản phẩm" />
+            <button type="submit" class="btn btn-outline-primary bg-white fw-semibold">Tìm đơn hàng</button>
+        </div>
+    }
+
+    @if (Model == null || !Model.Any())
+    {
+        <div class="card p-5 text-center">
+            <h5 class="text-danger fw-bold mb-3">BẠN CHƯA CÓ ĐƠN HÀNG NÀO. HÃY ĐẶT ĐƠN NGAY.</h5>
+            <div>
+                <a href="@Url.Action("Index", "Home")" class="btn btn-primary px-4">Về trang HOME mua sắm ngay</a>
+            </div>
+        </div>
+    }
+    else
+    {
+        // Gom nhóm theo trạng thái đơn hàng: hiển thị 2 đơn gần nhất mỗi trạng thái, bấm "Xem thêm" hiển thị tối đa 50 đơn
+        var statusGroups = Model.GroupBy(o => o.DeliveryStatus).ToList();
+
+        foreach (var group in statusGroups)
+        {
+            string groupKey = group.Key;
+            bool isExpanded = string.Equals(expandStatus, groupKey, StringComparison.OrdinalIgnoreCase) || !string.IsNullOrEmpty(selectedStatus);
+            int limit = isExpanded ? 50 : 2;
+            var displayedOrders = group.Take(limit).ToList();
+            int remainingOrders = group.Count() - displayedOrders.Count;
+
+            foreach (var order in displayedOrders)
+            {
+                <div class="order-card">
+                    <div class="d-flex justify-content-between align-items-center pb-2 mb-2" style="border-bottom: 1px solid #eee;">
+                        <div>
+                            @if (order.DeliveryStatus == "Đã giao hàng")
+                            {
+                                <span class="text-success fw-bold">🚚 Giao hàng thành công (Đã giao)</span>
+                            }
+                            else if (order.DeliveryStatus == "Đang giao hàng")
+                            {
+                                <span class="text-info fw-bold">🛵 Đang vận chuyển (Đang giao hàng)</span>
+                            }
+                            else if (order.DeliveryStatus == "Đã hủy")
+                            {
+                                <span class="text-secondary fw-bold">🚫 Đã hủy</span>
+                            }
+                            else
+                            {
+                                <span class="text-warning fw-bold" style="color:#d97706 !important;">⏳ Đang xử lý (Chưa giao hàng)</span>
+                            }
+                            <span class="text-muted ms-2 small">| Mã đơn: <strong>#@order.OrderID</strong> | Ngày đặt: @order.OrderDate.ToString("dd/MM/yyyy") | @order.PaymentOnlyStatus</span>
+                        </div>
+                        <div>
+                            <span class="badge bg-light text-dark border">@order.ShippingMethod</span>
+                        </div>
+                    </div>
+
+                    @if (order.OrderDetails != null && order.OrderDetails.Any())
+                    {
+                        foreach (var item in order.OrderDetails)
+                        {
+                            <div class="order-item-row">
+                                <div class="order-item-left">
+                                    <div class="order-img-box">
+                                        @if (item.Product != null && !string.IsNullOrEmpty(item.Product.ProductImage))
+                                        {
+                                            <img src="@item.Product.ProductImage" alt="@item.Product.ProductName" />
+                                        }
+                                        <span class="order-qty-badge">x@(item.Quantity)</span>
+                                    </div>
+                                    <div>
+                                        <div class="fw-semibold">
+                                            <a href="@Url.Action("ProductDetails", "Home", new { id = item.ProductID })" style="text-decoration:none; color:#212529;">
+                                                @(item.Product != null ? item.Product.ProductName : "Sản phẩm #" + item.ProductID)
+                                            </a>
+                                        </div>
+                                        <small class="text-muted">Đơn giá: @item.UnitPrice.ToString("N0") đ</small>
+                                    </div>
+                                </div>
+                                <div class="fw-semibold">
+                                    @((item.Quantity * item.UnitPrice).ToString("N0")) đ
+                                </div>
+                            </div>
+                        }
+                    }
+
+                    <div class="d-flex justify-content-between align-items-center pt-3 flex-wrap gap-2">
+                        <div class="d-flex gap-2 align-items-center flex-wrap">
+                            @{
+                                bool isOrderPaid = order.PaymentOnlyStatus.IndexOf("Đã thanh toán", StringComparison.OrdinalIgnoreCase) >= 0;
+                                bool isOrderCOD = order.PaymentMethod.IndexOf("tiền mặt", StringComparison.OrdinalIgnoreCase) >= 0 || order.PaymentMethod.IndexOf("COD", StringComparison.OrdinalIgnoreCase) >= 0;
+                                bool canUserConfirm = order.DeliveryStatus == "Đang giao hàng" && (isOrderPaid || isOrderCOD);
+                            }
+
+                            @if (order.DeliveryStatus == "Chưa giao hàng")
+                            {
+                                using (Html.BeginForm("CancelOrder", "Order", new { id = order.OrderID }, FormMethod.Post, new { style = "display:inline;" }))
+                                {
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-outline-danger btn-sm" onclick="return confirm('Bạn có chắc muốn hủy đơn hàng #@order.OrderID không?');">Hủy đơn hàng</button>
+                                }
+
+                                if (!isOrderPaid && !isOrderCOD)
+                                {
+                                    <span class="badge bg-warning text-dark border">
+                                        ⏳ Chờ Admin xác nhận thanh toán
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary-subtle text-secondary border">
+                                        📦 Shop đang chuẩn bị hàng
+                                    </span>
+                                }
+                            }
+                            else if (canUserConfirm)
+                            {
+                                <span class="badge bg-info-subtle text-info border">
+                                    🛵 Đang giao đến bạn
+                                </span>
+                                using (Html.BeginForm("ConfirmDelivery", "Order", new { id = order.OrderID }, FormMethod.Post, new { style = "display:inline;" }))
+                                {
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-success btn-sm fw-bold shadow-sm" onclick="return confirm('Bạn xác nhận đã nhận được kiện hàng từ shipper cho đơn hàng #@order.OrderID?');">
+                                        ✅ Đã nhận được hàng
+                                    </button>
+                                }
+                            }
+                            else if (order.DeliveryStatus == "Đã giao hàng")
+                            {
+                                <span class="badge bg-success-subtle text-success border border-success px-2 py-1">
+                                    ✓ Đã giao hàng thành công
+                                </span>
+                            }
+                        </div>
+                        <div class="text-end">
+                            <div class="mb-2" style="font-size: 1.05rem;">
+                                <span class="text-muted">Tổng tiền:</span>
+                                <strong class="text-dark ms-1">@order.TotalAmount.ToString("N0") đ</strong>
+                            </div>
+                            <div class="d-flex gap-2 justify-content-end">
+                                <a href="@Url.Action("Reorder", "Order", new { id = order.OrderID })" class="btn btn-outline-primary btn-sm">Mua lại</a>
+                                <a href="@Url.Action("OrderSuccess", "Order", new { id = order.OrderID })" class="btn btn-outline-primary btn-sm">Xem chi tiết</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+
+            if (remainingOrders > 0)
+            {
+                <div class="text-center mb-4">
+                    <a href="@Url.Action("MyOrder", "Order", new { status = selectedStatus, searchTerm = searchTerm, expandStatus = groupKey })" class="btn btn-outline-secondary btn-sm">
+                        Xem thêm @remainingOrders đơn hàng (@groupKey)
+                    </a>
+                </div>
+            }
+        }
+    }
+</div>
