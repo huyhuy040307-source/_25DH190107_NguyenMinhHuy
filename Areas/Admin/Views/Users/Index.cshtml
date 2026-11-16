@@ -1,0 +1,122 @@
+@model IEnumerable<_25DH190025_NguyenHuynhHongQuan.Models.User>
+
+@{
+    ViewBag.Title = "Quản lý tài khoản & Phân quyền";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+    string currentRoleFilter = ViewBag.RoleFilter as string ?? "";
+    string currentSearch = ViewBag.SearchTerm as string ?? "";
+}
+
+<h2 class="bg-success text-white p-2" style="border-radius: 4px;">QUẢN LÝ TÀI KHOẢN & PHÂN QUYỀN VAI TRÒ</h2>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success mt-2">
+        @TempData["SuccessMessage"]
+    </div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger mt-2">
+        ⚠️ @TempData["Error"]
+    </div>
+}
+
+<!-- Bộ lọc phân loại vai trò rõ ràng -->
+<div class="my-3 d-flex flex-wrap gap-2 align-items-center">
+    <strong class="me-2">Phân loại vai trò:</strong>
+    <a href="@Url.Action("Index", "Users", new { roleFilter = "", searchTerm = currentSearch })"
+       class="btn btn-sm @(string.IsNullOrEmpty(currentRoleFilter) ? "btn-dark fw-bold" : "btn-outline-dark")">
+        Tất cả tài khoản (@ViewBag.TotalCount)
+    </a>
+    <a href="@Url.Action("Index", "Users", new { roleFilter = "Admin", searchTerm = currentSearch })"
+       class="btn btn-sm @(currentRoleFilter == "Admin" ? "btn-danger fw-bold" : "btn-outline-danger")">
+        👑 Quản trị viên (Admin) (@ViewBag.AdminCount)
+    </a>
+    <a href="@Url.Action("Index", "Users", new { roleFilter = "Customer", searchTerm = currentSearch })"
+       class="btn btn-sm @(currentRoleFilter == "Customer" ? "btn-primary fw-bold" : "btn-outline-primary")">
+        🛒 Khách hàng (Customer) (@ViewBag.CustomerCount)
+    </a>
+</div>
+
+<div class="row mb-3">
+    <div class="col-md-6">
+        @using (Html.BeginForm("Index", "Users", FormMethod.Get, new { @class = "d-flex gap-2" }))
+        {
+            <input type="hidden" name="roleFilter" value="@currentRoleFilter" />
+            <input type="text" name="searchTerm" class="form-control" placeholder="Tìm theo tên đăng nhập, họ tên, email..." value="@ViewBag.SearchTerm" />
+            <button type="submit" class="btn btn-primary text-nowrap">Tìm kiếm</button>
+            if (!string.IsNullOrEmpty(ViewBag.SearchTerm as string) || !string.IsNullOrEmpty(currentRoleFilter))
+            {
+                <a href="@Url.Action("Index", "Users")" class="btn btn-outline-secondary text-nowrap">Xóa lọc</a>
+            }
+        }
+    </div>
+    <div class="col-md-6 text-md-end mt-2 mt-md-0" style="text-align: right;">
+        @Html.ActionLink("+ Thêm tài khoản mới", "Create", null, new { @class = "btn btn-success fw-semibold" })
+    </div>
+</div>
+
+<table class="table table-bordered table-striped table-hover align-middle">
+    <thead class="bg-success text-white">
+        <tr>
+            <th style="width: 18%;">Tên đăng nhập</th>
+            <th style="width: 22%;">Họ tên liên kết</th>
+            <th style="width: 20%;">Số điện thoại / Email</th>
+            <th style="width: 22%;" class="text-center">Vai trò & Quyền hạn</th>
+            <th style="width: 18%;" class="text-center">Thao tác</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Model != null && Model.Any())
+        {
+            foreach (var item in Model)
+            {
+                var cust = item.Customers.FirstOrDefault();
+                string role = (item.UserRole ?? "").Trim();
+                bool isAdmin = role.Equals("Admin", StringComparison.OrdinalIgnoreCase) || role.Equals("A", StringComparison.OrdinalIgnoreCase);
+                <tr>
+                    <td class="fw-semibold">
+                        <strong>@item.Username</strong>
+                        @if (string.Equals(item.Username, Session["Username"] as string, StringComparison.OrdinalIgnoreCase))
+                        {
+                            <span class="badge bg-warning text-dark ms-1">Đang đăng nhập</span>
+                        }
+                    </td>
+                    <td>@(cust != null ? cust.CustomerName : "—")</td>
+                    <td>
+                        @(cust != null ? cust.CustomerPhone : "")
+                        @if (cust != null && !string.IsNullOrEmpty(cust.CustomerEmail))
+                        {
+                            <br /><small class="text-muted">@cust.CustomerEmail</small>
+                        }
+                    </td>
+                    <td class="text-center">
+                        @if (isAdmin)
+                        {
+                            <span class="badge bg-danger p-2" style="font-size: 0.9rem;">👑 Quản trị viên (Admin)</span>
+                            <div><small class="text-danger fw-semibold">Toàn quyền quản trị website</small></div>
+                        }
+                        else
+                        {
+                            <span class="badge bg-primary p-2" style="font-size: 0.9rem;">🛒 Khách hàng (Customer)</span>
+                            <div><small class="text-muted">Mua sắm & xem đơn hàng</small></div>
+                        }
+                    </td>
+                    <td class="text-center">
+                        @Html.ActionLink("Sửa", "Edit", new { id = item.Username }, new { @class = "btn btn-primary btn-sm" })
+                        @Html.ActionLink("Chi tiết", "Details", new { id = item.Username }, new { @class = "btn btn-info btn-sm text-white" })
+                        @Html.ActionLink("Xóa", "Delete", new { id = item.Username }, new { @class = "btn btn-danger btn-sm" })
+                    </td>
+                </tr>
+            }
+        }
+        else
+        {
+            <tr>
+                <td colspan="5" class="text-center text-muted py-4">Không tìm thấy tài khoản nào trong mục này.</td>
+            </tr>
+        }
+    </tbody>
+</table>

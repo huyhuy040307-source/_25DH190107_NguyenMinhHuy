@@ -1,0 +1,60 @@
+@model _25DH190025_NguyenHuynhHongQuan.Models.User
+
+@{
+    ViewBag.Title = "Chi tiết tài khoản";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+    var cust = Model != null && Model.Customers != null ? Model.Customers.FirstOrDefault() : null;
+}
+
+<h2 class="bg-success text-white p-2" style="border-radius: 4px;">THÔNG TIN CHI TIẾT TÀI KHOẢN</h2>
+
+<table class="table table-bordered mt-3" style="max-width: 700px;">
+    <tr>
+        <th class="bg-light" style="width: 30%;">Tên đăng nhập</th>
+        <td class="fw-bold"><strong>@Model.Username</strong></td>
+    </tr>
+    <tr>
+        <th class="bg-light">Mật khẩu</th>
+        <td>@Model.Password</td>
+    </tr>
+    <tr>
+        <th class="bg-light">Họ tên khách hàng</th>
+        <td>@(cust != null ? cust.CustomerName : "—")</td>
+    </tr>
+    <tr>
+        <th class="bg-light">Số điện thoại</th>
+        <td>@(cust != null ? cust.CustomerPhone : "—")</td>
+    </tr>
+    <tr>
+        <th class="bg-light">Email</th>
+        <td>@(cust != null ? cust.CustomerEmail : "—")</td>
+    </tr>
+    <tr>
+        <th class="bg-light">Địa chỉ</th>
+        <td>@(cust != null ? cust.CustomerAddress : "—")</td>
+    </tr>
+    <tr>
+        <th class="bg-light">Vai trò</th>
+        <td>
+            @{
+                string role = (Model.UserRole ?? "").Trim();
+                bool isAdmin = role.Equals("Admin", StringComparison.OrdinalIgnoreCase) || role.Equals("A", StringComparison.OrdinalIgnoreCase);
+            }
+            @if (isAdmin)
+            {
+                <span class="badge bg-danger p-2" style="font-size:0.9rem;">👑 Quản trị viên (Admin)</span>
+                <span class="text-danger ms-2 fw-semibold">Toàn quyền quản trị website</span>
+            }
+            else
+            {
+                <span class="badge bg-primary p-2" style="font-size:0.9rem;">🛒 Khách hàng (Customer)</span>
+                <span class="text-muted ms-2">Tài khoản mua hàng</span>
+            }
+        </td>
+    </tr>
+</table>
+
+<p class="mt-3">
+    @Html.ActionLink("Cập nhật", "Edit", new { id = Model.Username }, new { @class = "btn btn-primary" })
+    @Html.ActionLink("Quay lại danh sách", "Index", null, new { @class = "btn btn-secondary ms-2" })
+</p>

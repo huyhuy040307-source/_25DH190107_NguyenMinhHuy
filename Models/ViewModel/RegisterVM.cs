@@ -4,7 +4,7 @@ using System.Linq;
 using System.Web;
 using System.ComponentModel.DataAnnotations;
 
-namespace _25DH190107_NguyenMinhHuy.Models.ViewModel
+namespace _25DH190025_NguyenHuynhHongQuan.Models.ViewModel
 {
     public class RegisterVM
     {

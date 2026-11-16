@@ -1,29 +1,29 @@
-﻿using _25DH190107_NguyenMinhHuy.Models;
-using _25DH190107_NguyenMinhHuy.Models.ViewModel;
+using _25DH190025_NguyenHuynhHongQuan.Models;
+using _25DH190025_NguyenHuynhHongQuan.Models.ViewModel;
 using PagedList;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Entity;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Web;
 using System.Web.Mvc;
 using PagedList.Mvc;
 
-namespace _25DH190107_NguyenMinhHuy.Areas.Admin.Controllers
+namespace _25DH190025_NguyenHuynhHongQuan.Areas.Admin.Controllers
 {
-    public class ProductsController : Controller
+    public class ProductsController : BaseAdminController
     {
         private MyStoreEntities db = new MyStoreEntities();
 
         // GET: Admin/Products
-        public ActionResult Index(string searchTerm,decimal? minPrice,decimal? maxPrice,string sortOrder,int? page)
+        public ActionResult Index(string searchTerm, decimal? minPrice, decimal? maxPrice, string sortOrder, int? page)
         {
             var model = new ProductSearchVM();
-            var products = db.Products.AsQueryable();
+            var products = db.Products.Include(p => p.Category).AsQueryable();
 
-            // Tìm kiếm sản phẩm dựa trên từ khóa
             if (!string.IsNullOrEmpty(searchTerm))
             {
                 model.SearchTerm = searchTerm;
@@ -32,56 +32,67 @@ namespace _25DH190107_NguyenMinhHuy.Areas.Admin.Controllers
                                                p.Category.CategoryName.Contains(searchTerm));
             }
 
-            // Tìm kiếm sản phẩm dựa trên giá tối thiểu
             if (minPrice.HasValue)
             {
                 model.MinPrice = minPrice.Value;
                 products = products.Where(p => p.ProductPrice >= minPrice.Value);
             }
 
-            // Tìm kiếm sản phẩm dựa trên giá tối đa
             if (maxPrice.HasValue)
             {
                 model.MaxPrice = maxPrice.Value;
                 products = products.Where(p => p.ProductPrice <= maxPrice.Value);
             }
 
-            // Áp dụng sắp xếp dựa trên lựa chọn của người dùng
             switch (sortOrder)
             {
                 case "name_asc":
                     products = products.OrderBy(p => p.ProductName);
                     break;
-
                 case "name_desc":
                     products = products.OrderByDescending(p => p.ProductName);
                     break;
-
                 case "price_asc":
                     products = products.OrderBy(p => p.ProductPrice);
                     break;
-
                 case "price_desc":
                     products = products.OrderByDescending(p => p.ProductPrice);
                     break;
-
-                default: // Mặc định sắp xếp theo tên
+                default:
                     products = products.OrderBy(p => p.ProductName);
                     break;
             }
 
             model.SortOrder = sortOrder;
-
-            // Đoạn code liên quan tới phân trang
-            // Lấy số trang hiện tại (mặc định là trang 1 nếu không có giá trị)
             int pageNumber = page ?? 1;
-            int pageSize = 7; // Số sản phẩm mỗi trang
-
-            // Dòng câu lệnh này, sử dụng ToPagedList để lấy danh sách đã phân trang
-            // model.Products = products.ToList();
+            int pageSize = 7;
             model.Products = products.ToPagedList(pageNumber, pageSize);
 
             return View(model);
+        }
+
+        // GET: Admin/Products/Inventory (Quản lý kho hàng: Hàng tồn > 0 và Hàng cần nhập = 0)
+        public ActionResult Inventory()
+        {
+            var allProducts = db.Products.Include(p => p.Category).OrderBy(p => p.Quantity).ToList();
+            ViewBag.InStockProducts = allProducts.Where(p => p.Quantity > 0).ToList();
+            ViewBag.OutOfStockProducts = allProducts.Where(p => p.Quantity <= 0).ToList();
+            return View(allProducts);
+        }
+
+        // POST: Admin/Products/UpdateStock
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult UpdateStock(int productId, int quantity)
+        {
+            var prod = db.Products.Find(productId);
+            if (prod != null && quantity >= 0)
+            {
+                prod.Quantity = quantity;
+                db.SaveChanges();
+                TempData["SuccessMessage"] = string.Format("Đã cập nhật số lượng tồn kho của \"{0}\" thành {1}.", prod.ProductName, quantity);
+            }
+            return RedirectToAction("Inventory");
         }
 
         // GET: Admin/Products/Details/5
@@ -91,7 +102,7 @@ namespace _25DH190107_NguyenMinhHuy.Areas.Admin.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            Product product = db.Products.Find(id);
+            Product product = db.Products.Include(p => p.Category).Include(p => p.OrderDetails).SingleOrDefault(p => p.ProductID == id);
             if (product == null)
             {
                 return HttpNotFound();
@@ -103,20 +114,32 @@ namespace _25DH190107_NguyenMinhHuy.Areas.Admin.Controllers
         public ActionResult Create()
         {
             ViewBag.CategoryID = new SelectList(db.Categories, "CategoryID", "CategoryName");
-            return View();
+            return View(new Product { Quantity = 50, SoldQuantity = 0 });
         }
 
         // POST: Admin/Products/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to, for 
-        // more details see https://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create([Bind(Include = "ProductID,CategoryID,ProductName,ProductDescription,ProductPrice,ProductImage")] Product product)
+        public ActionResult Create([Bind(Include = "ProductID,CategoryID,ProductName,ProductDescription,ProductPrice,ProductImage,Quantity,SoldQuantity,UploadImage")] Product product)
         {
+            if (product.UploadImage != null && product.UploadImage.ContentLength > 0)
+            {
+                string fileName = Path.GetFileName(product.UploadImage.FileName);
+                string uploadDir = Server.MapPath("~/Images");
+                if (!Directory.Exists(uploadDir))
+                {
+                    Directory.CreateDirectory(uploadDir);
+                }
+                string filePath = Path.Combine(uploadDir, fileName);
+                product.UploadImage.SaveAs(filePath);
+                product.ProductImage = "/Images/" + fileName;
+            }
+
             if (ModelState.IsValid)
             {
                 db.Products.Add(product);
                 db.SaveChanges();
+                TempData["SuccessMessage"] = "Thêm sản phẩm mới thành công!";
                 return RedirectToAction("Index");
             }
 
@@ -141,16 +164,28 @@ namespace _25DH190107_NguyenMinhHuy.Areas.Admin.Controllers
         }
 
         // POST: Admin/Products/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to, for 
-        // more details see https://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit([Bind(Include = "ProductID,CategoryID,ProductName,ProductDescription,ProductPrice,ProductImage")] Product product)
+        public ActionResult Edit([Bind(Include = "ProductID,CategoryID,ProductName,ProductDescription,ProductPrice,ProductImage,Quantity,SoldQuantity,UploadImage")] Product product)
         {
+            if (product.UploadImage != null && product.UploadImage.ContentLength > 0)
+            {
+                string fileName = Path.GetFileName(product.UploadImage.FileName);
+                string uploadDir = Server.MapPath("~/Images");
+                if (!Directory.Exists(uploadDir))
+                {
+                    Directory.CreateDirectory(uploadDir);
+                }
+                string filePath = Path.Combine(uploadDir, fileName);
+                product.UploadImage.SaveAs(filePath);
+                product.ProductImage = "/Images/" + fileName;
+            }
+
             if (ModelState.IsValid)
             {
                 db.Entry(product).State = EntityState.Modified;
                 db.SaveChanges();
+                TempData["SuccessMessage"] = "Cập nhật sản phẩm thành công!";
                 return RedirectToAction("Index");
             }
             ViewBag.CategoryID = new SelectList(db.Categories, "CategoryID", "CategoryName", product.CategoryID);
@@ -164,7 +199,7 @@ namespace _25DH190107_NguyenMinhHuy.Areas.Admin.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            Product product = db.Products.Find(id);
+            Product product = db.Products.Include(p => p.Category).Include(p => p.OrderDetails).SingleOrDefault(p => p.ProductID == id);
             if (product == null)
             {
                 return HttpNotFound();
@@ -177,9 +212,22 @@ namespace _25DH190107_NguyenMinhHuy.Areas.Admin.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult DeleteConfirmed(int id)
         {
-            Product product = db.Products.Find(id);
+            Product product = db.Products.Include(p => p.OrderDetails).SingleOrDefault(p => p.ProductID == id);
+            if (product == null)
+            {
+                return HttpNotFound();
+            }
+
+            // Kiểm tra ràng buộc khóa ngoại với bảng OrderDetail
+            if (product.OrderDetails != null && product.OrderDetails.Any())
+            {
+                TempData["Error"] = string.Format("Không thể xóa sản phẩm \"{0}\" vì sản phẩm này đã phát sinh trong {1} chi tiết đơn hàng!", product.ProductName, product.OrderDetails.Count);
+                return RedirectToAction("Index");
+            }
+
             db.Products.Remove(product);
             db.SaveChanges();
+            TempData["SuccessMessage"] = "Đã xóa sản phẩm thành công!";
             return RedirectToAction("Index");
         }
 

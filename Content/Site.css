@@ -1,4 +1,4 @@
-﻿/* Set padding to keep content from hitting the edges */
+/* Set padding to keep content from hitting the edges */
 .body-content {
     margin-top: 15px;
     padding-left: 15px;
@@ -18,3 +18,78 @@ select,
 textarea {
     max-width: 280px;
 }
+
+/* ================================================================
+   THEME GỖ TỰ NHIÊN & NÂU ẤM (WARM NATURAL WOOD BOOKSTORE THEME)
+   ================================================================ */
+:root {
+    --wood-espresso: #3E2723;
+    --wood-dark: #4A2E18;
+    --wood-walnut: #5D4037;
+    --wood-medium: #795548;
+    --wood-teak: #8D6E63;
+    --wood-amber: #B45309;
+    --wood-golden: #D97706;
+    --wood-terracotta: #A0522D;
+    --wood-cream: #FBF8F5;
+    --wood-parchment: #F5EFEB;
+    --wood-border: #E8DFD8;
+    --wood-text: #2D241E;
+}
+
+body {
+    background-color: #FBF8F5;
+    color: #2D241E;
+}
+
+/* Custom Navbar phong cách Gỗ tự nhiên */
+.navbar-wood {
+    background: linear-gradient(135deg, #3E2723 0%, #2A1810 100%) !important;
+    border-bottom: 3px solid #8D6E63;
+    box-shadow: 0 4px 12px rgba(42, 24, 16, 0.25);
+}
+
+.navbar-wood .navbar-brand {
+    color: #FFD59B !important;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    transition: color 0.2s;
+}
+
+.navbar-wood .navbar-brand:hover {
+    color: #FFE0B2 !important;
+}
+
+.navbar-wood .nav-link {
+    color: #F5EFEB !important;
+    font-weight: 500;
+    transition: color 0.2s, background-color 0.2s;
+}
+
+.navbar-wood .nav-link:hover {
+    color: #FFD59B !important;
+}
+
+/* Phân trang PagedList theo tông gỗ */
+.pagination > .active > a,
+.pagination > .active > span,
+.pagination > .active > a:hover,
+.pagination > .active > span:hover,
+.pagination > .active > a:focus,
+.pagination > .active > span:focus {
+    background-color: #795548 !important;
+    border-color: #5D4037 !important;
+    color: #ffffff !important;
+}
+
+.pagination > li > a,
+.pagination > li > span {
+    color: #5D4037;
+    border-color: #E8DFD8;
+}
+
+.pagination > li > a:hover {
+    background-color: #F5EFEB;
+    color: #3E2723;
+}
+

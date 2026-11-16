@@ -1,0 +1,194 @@
+/* ================================================================
+   ADMIN WARM WOOD THEME - PHONG CÁCH GỖ TỰ NHIÊN & NÂU ẤM CHO ADMIN
+   ================================================================ */
+
+:root {
+    --wood-espresso: #3E2723;
+    --wood-dark: #4A2E18;
+    --wood-walnut: #5D4037;
+    --wood-medium: #795548;
+    --wood-teak: #8D6E63;
+    --wood-amber: #B45309;
+    --wood-golden: #D97706;
+    --wood-terracotta: #A0522D;
+    --wood-cream: #FBF8F5;
+    --wood-parchment: #F5EFEB;
+    --wood-border: #E8DFD8;
+    --wood-text: #2D241E;
+}
+
+body {
+    background-color: #FBF8F5;
+    color: #2D241E;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+/* Tiêu đề trang Admin chính */
+h2.bg-success, 
+h2.admin-page-title,
+h2[style*="background-color: #dff0d8"] {
+    background: linear-gradient(135deg, #5D4037 0%, #3E2723 100%) !important;
+    color: #FFFDF9 !important;
+    border-radius: 8px !important;
+    padding: 12px 18px !important;
+    border-left: 5px solid #FFD59B !important;
+    box-shadow: 0 3px 8px rgba(62, 39, 35, 0.18) !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.5px !important;
+    margin-top: 10px !important;
+    margin-bottom: 20px !important;
+}
+
+/* Tiêu đề phụ Admin */
+h4.bg-success,
+h4.bg-info,
+h5.bg-info {
+    background: linear-gradient(135deg, #795548 0%, #5D4037 100%) !important;
+    color: #ffffff !important;
+    border-radius: 6px !important;
+    padding: 10px 14px !important;
+    font-weight: 600 !important;
+    margin-top: 15px !important;
+    margin-bottom: 15px !important;
+}
+
+/* Khối Bảng dữ liệu Admin (Table) */
+table.table {
+    background-color: #ffffff !important;
+    border: 1px solid #E8DFD8 !important;
+    border-radius: 8px !important;
+    overflow: hidden !important;
+    box-shadow: 0 2px 8px rgba(93, 64, 55, 0.05) !important;
+    margin-top: 15px !important;
+}
+
+/* Header bảng Admin */
+table.table thead,
+table.table thead.bg-success,
+table.table thead th,
+table.table th.bg-success,
+thead[style*="background-color: #dff0d8"] th {
+    background: linear-gradient(135deg, #5D4037 0%, #4A2E18 100%) !important;
+    color: #FFFDF9 !important;
+    border-color: #4A2E18 !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    font-size: 0.88rem !important;
+    letter-spacing: 0.3px !important;
+    padding: 12px 14px !important;
+}
+
+/* Khử màu nền xanh cũ bg-info và d9edf7 */
+table.bg-info,
+tbody.bg-info,
+tbody[style*="background-color: #d9edf7"] {
+    background-color: #ffffff !important;
+}
+
+table.table-striped tbody tr:nth-of-type(odd) {
+    background-color: #FAF6F2 !important;
+}
+
+table.table-striped tbody tr:nth-of-type(even) {
+    background-color: #ffffff !important;
+}
+
+table.table-hover tbody tr:hover {
+    background-color: #F3ECE6 !important;
+}
+
+table.table td {
+    border-color: #EBDCD0 !important;
+    vertical-align: middle !important;
+    color: #2D241E !important;
+}
+
+/* Thẻ Card trong trang quản trị */
+.card {
+    border: 1px solid #E8DFD8 !important;
+    border-radius: 10px !important;
+    box-shadow: 0 2px 8px rgba(93, 64, 55, 0.06) !important;
+    background-color: #ffffff !important;
+}
+
+/* Nút bấm quản trị Admin */
+.btn-primary {
+    background: linear-gradient(135deg, #B45309 0%, #8B4513 100%) !important;
+    border-color: #78350F !important;
+    color: #ffffff !important;
+    box-shadow: 0 2px 4px rgba(139, 69, 19, 0.25) !important;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #9A3412 0%, #70360B 100%) !important;
+    border-color: #5A2705 !important;
+}
+
+.btn-outline-primary {
+    border-color: #8D6E63 !important;
+    color: #5D4037 !important;
+    background: #ffffff !important;
+}
+
+.btn-outline-primary:hover {
+    background-color: #F5EFEB !important;
+    color: #3E2723 !important;
+    border-color: #5D4037 !important;
+}
+
+.btn-success {
+    background: linear-gradient(135deg, #5D4037 0%, #4A2E18 100%) !important;
+    border-color: #3E2723 !important;
+    color: #ffffff !important;
+}
+
+.btn-success:hover {
+    background: linear-gradient(135deg, #4A2E18 0%, #2A1810 100%) !important;
+}
+
+.btn-outline-success {
+    border-color: #5D4037 !important;
+    color: #5D4037 !important;
+}
+
+.btn-outline-success:hover {
+    background-color: #5D4037 !important;
+    color: #ffffff !important;
+}
+
+.btn-info {
+    background: linear-gradient(135deg, #8D6E63 0%, #6D4C41 100%) !important;
+    border-color: #5D4037 !important;
+    color: #ffffff !important;
+}
+
+.btn-info:hover {
+    background: linear-gradient(135deg, #795548 0%, #5D4037 100%) !important;
+}
+
+.btn-outline-info {
+    border-color: #8D6E63 !important;
+    color: #795548 !important;
+}
+
+.btn-outline-info:hover {
+    background-color: #8D6E63 !important;
+    color: #ffffff !important;
+}
+
+/* Phân trang Admin */
+.pagination-container .pagination > .active > a,
+.pagination-container .pagination > .active > span {
+    background-color: #795548 !important;
+    border-color: #5D4037 !important;
+    color: #ffffff !important;
+}
+
+.pagination-container .pagination > li > a {
+    color: #5D4037 !important;
+    border-color: #E8DFD8 !important;
+}
+
+.pagination-container .pagination > li > a:hover {
+    background-color: #F5EFEB !important;
+}

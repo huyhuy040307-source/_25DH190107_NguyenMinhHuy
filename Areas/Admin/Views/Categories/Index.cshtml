@@ -1,36 +1,48 @@
-﻿@model IEnumerable<_25DH190107_NguyenMinhHuy.Models.Category>
+@model IEnumerable<_25DH190025_NguyenHuynhHongQuan.Models.Category>
 
 @{
-    ViewBag.Title = "Index";
+    ViewBag.Title = "Quản lý danh mục";
     Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
 }
 
-<h2 class="bg-success container-fluid">DANH MỤC SẢN PHẨM</h2>
+<h2 class="bg-success text-white p-2" style="border-radius: 4px;">DANH MỤC SẢN PHẨM</h2>
 
-
-<table class="table bg-info container-fluid">
-    <tr>
-        <th class="bg-success col-md-4">
-            @*@Html.DisplayNameFor(model => model.CategoryName)*@
-            TÊN DANH MỤC
-        </th>
-        <th class="bg-success col-md-2"></th>
-    </tr>
-
-@foreach (var item in Model) {
-    <tr>
-        <td>
-            @Html.DisplayFor(modelItem => item.CategoryName)
-        </td>
-        <td>
-            @Html.ActionLink("Cập nhật", "Edit", new { id = item.CategoryID }, new { @class = "btn btn-primary btn-sm" })
-            @Html.ActionLink("Chi tiết", "Details", new { id = item.CategoryID }, new { @class = "btn btn-primary btn-sm" })
-            @Html.ActionLink("Xóa", "Delete", new { id = item.CategoryID }, new { @class = "btn btn-primary btn-sm" })
-        </td>
-    </tr>
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success mt-2">@TempData["SuccessMessage"]</div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger mt-2">⚠️ @TempData["Error"]</div>
 }
 
+<table class="table table-bordered table-striped bg-info container-fluid mt-3">
+    <thead>
+        <tr>
+            <th class="bg-success text-white col-md-5">TÊN DANH MỤC</th>
+            <th class="bg-success text-white col-md-3 text-center">TỔNG SỐ HÀNG HÓA</th>
+            <th class="bg-success text-white col-md-4 text-center">THAO TÁC</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td><strong>@Html.DisplayFor(modelItem => item.CategoryName)</strong></td>
+                <td class="text-center">
+                    <span class="badge bg-primary" style="font-size: 0.95rem;">
+                        @(item.Products != null ? item.Products.Count() : 0) sản phẩm
+                    </span>
+                </td>
+                <td class="text-center">
+                    @Html.ActionLink("Cập nhật", "Edit", new { id = item.CategoryID }, new { @class = "btn btn-primary btn-sm" })
+                    @Html.ActionLink("Chi tiết", "Details", new { id = item.CategoryID }, new { @class = "btn btn-info btn-sm text-white" })
+                    @Html.ActionLink("Xóa", "Delete", new { id = item.CategoryID }, new { @class = "btn btn-danger btn-sm" })
+                </td>
+            </tr>
+        }
+    </tbody>
 </table>
 <p>
-    @Html.ActionLink("Thêm mới", "Create", null, new { @class = "btn btn-primary" })
+    @Html.ActionLink("+ Thêm danh mục mới", "Create", null, new { @class = "btn btn-primary" })
 </p>

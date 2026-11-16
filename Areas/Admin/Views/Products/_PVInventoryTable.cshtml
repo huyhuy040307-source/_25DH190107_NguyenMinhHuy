@@ -1,0 +1,55 @@
+@model IEnumerable<_25DH190025_NguyenHuynhHongQuan.Models.Product>
+
+<table class="table table-bordered table-striped align-middle">
+    <thead class="bg-info">
+        <tr>
+            <th>Hình ảnh</th>
+            <th>Tên sản phẩm</th>
+            <th>Chủng loại</th>
+            <th>Đơn giá</th>
+            <th class="text-center">Đã bán</th>
+            <th class="text-center">Số lượng tồn</th>
+            <th>Nhập thêm / Cập nhật tồn kho</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Model != null && Model.Any())
+        {
+            foreach (var item in Model)
+            {
+                <tr>
+                    <td><img src="@item.ProductImage" style="height: 60px; max-width: 60px; object-fit: contain;" /></td>
+                    <td><strong>@item.ProductName</strong></td>
+                    <td>@(item.Category != null ? item.Category.CategoryName : "")</td>
+                    <td class="text-danger fw-bold">@item.ProductPrice.ToString("N0") đ</td>
+                    <td class="text-center">@item.SoldQuantity</td>
+                    <td class="text-center">
+                        @if (item.Quantity > 0)
+                        {
+                            <span class="badge bg-success" style="font-size: 0.95rem;">@item.Quantity</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-danger" style="font-size: 0.95rem;">Cần nhập hàng (0)</span>
+                        }
+                    </td>
+                    <td>
+                        @using (Html.BeginForm("UpdateStock", "Products", new { area = "Admin" }, FormMethod.Post, new { @class = "d-flex gap-2 align-items-center" }))
+                        {
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="productId" value="@item.ProductID" />
+                            <input type="number" name="quantity" value="@item.Quantity" min="0" class="form-control form-control-sm" style="width: 90px;" />
+                            <button type="submit" class="btn btn-primary btn-sm">Cập nhật</button>
+                        }
+                    </td>
+                </tr>
+            }
+        }
+        else
+        {
+            <tr>
+                <td colspan="7" class="text-center text-muted py-3">Không có sản phẩm nào trong danh sách này.</td>
+            </tr>
+        }
+    </tbody>
+</table>

@@ -6,7 +6,7 @@ using System.Web.Mvc;
 using System.Web.Optimization;
 using System.Web.Routing;
 
-namespace _25DH190107_NguyenMinhHuy
+namespace _25DH190025_NguyenHuynhHongQuan
 {
     public class MvcApplication : System.Web.HttpApplication
     {

@@ -1,60 +1,320 @@
-﻿
-@model _25DH190107_NguyenMinhHuy.Models.Order
+@model _25DH190025_NguyenHuynhHongQuan.Models.Order
 
 @{
-    ViewBag.Title = "OrderSuccess";
+    ViewBag.Title = "Đặt hàng & Thanh toán thành công";
     Layout = "~/Views/Shared/_Layout.cshtml";
+
+    string deliveryStatus = Model.DeliveryStatus;
+    int step = 1;
+    if (deliveryStatus == "Đang giao hàng") { step = 2; }
+    else if (deliveryStatus == "Đã giao hàng") { step = 3; }
+    else if (deliveryStatus == "Đã hủy") { step = 0; }
+
+    bool isPaid = Model.PaymentOnlyStatus.IndexOf("Đã thanh toán", StringComparison.OrdinalIgnoreCase) >= 0;
+    bool isBankTransfer = Model.PaymentMethod == "Chuyển khoản" || Model.PaymentOnlyStatus.IndexOf("Chuyển khoản", StringComparison.OrdinalIgnoreCase) >= 0;
+    bool isCOD = Model.PaymentMethod.IndexOf("tiền mặt", StringComparison.OrdinalIgnoreCase) >= 0 || Model.PaymentMethod.IndexOf("COD", StringComparison.OrdinalIgnoreCase) >= 0;
 }
 
-<div class="container">
-    <h2 class="text-center text-success">XÁC NHẬN ĐƠN HÀNG</h2>
-
-    <div class="alert alert-success text-center">
-        <h4>Đặt hàng thành công!</h4>
-        <p>Cảm ơn bạn đã mua hàng tại cửa hàng của chúng tôi.</p>
+<div class="container py-4">
+    <!-- Header Thông báo Đặt hàng & Thanh toán thành công phong cách Gỗ ấm -->
+    <div class="card shadow-sm border-0 mb-4 text-center p-4" style="background: linear-gradient(135deg, #F5EFEB 0%, #E8DFD8 100%); border: 1px solid #D7CCC8; border-radius: 16px;">
+        <div class="mb-2">
+            <span style="display: inline-block; width: 70px; height: 70px; line-height: 70px; border-radius: 50%; background-color: #5D4037; color: #FFD59B; font-size: 38px; box-shadow: 0 4px 12px rgba(93,64,55,0.35);">
+                ✓
+            </span>
+        </div>
+        <h2 class="fw-bold mb-1" style="color: #4A2E18;">🎉 ĐẶT HÀNG & THANH TOÁN THÀNH CÔNG!</h2>
+        <p class="mb-0" style="font-size: 1.05rem; color: #5D4037;">
+            Cảm ơn quý khách đã tin tưởng mua sắm tại <strong>My Store</strong>.<br />
+            Mã đơn hàng của bạn là <strong style="color: #B45309;">#@Model.OrderID</strong>.
+        </p>
     </div>
 
-    <h3>Thông tin đơn hàng</h3>
+    @if (TempData["OrderMessage"] != null)
+    {
+        <div class="alert alert-success text-center fw-bold shadow-sm">
+            🎉 @TempData["OrderMessage"]
+        </div>
+    }
+    @if (TempData["OrderError"] != null)
+    {
+        <div class="alert alert-danger text-center shadow-sm">
+            @TempData["OrderError"]
+        </div>
+    }
 
-    <div class="well">
-        <p><strong>Mã đơn hàng:</strong> @Model.OrderID</p>
-        <p><strong>Ngày đặt hàng:</strong> @Model.OrderDate</p>
-        <p><strong>Tổng số tiền:</strong> @Model.TotalAmount</p>
-        <p><strong>Trạng thái thanh toán:</strong> @Model.PaymentStatus</p>
-        <p><strong>Phương thức thanh toán:</strong> @Model.PaymentMethod</p>
-        <p><strong>Phương thức giao hàng:</strong> @Model.ShippingMethod</p>
-        <p><strong>Địa chỉ giao hàng:</strong> @Model.ShippingAddress</p>
-    </div>
-
-    <h3>Chi tiết đơn hàng</h3>
-
-    <table class="table table-bordered table-striped">
-        <thead>
-            <tr>
-                <th>Sản phẩm</th>
-                <th>Số lượng</th>
-                <th>Đơn giá</th>
-                <th>Tổng giá</th>
-            </tr>
-        </thead>
-
-        <tbody>
-            @foreach (var item in Model.OrderDetails)
+    <!-- Khối Thông tin Trạng thái Thanh toán -->
+    <div class="card mb-4 shadow-sm border-0" style="border-radius: 12px; overflow: hidden;">
+        <div class="card-header bg-white py-3 border-bottom">
+            <h5 class="mb-0 fw-bold text-dark">💳 TRẠNG THÁI THANH TOÁN</h5>
+        </div>
+        <div class="card-body p-4">
+            @if (isPaid)
             {
-                <tr>
-                    <td>@item.Product.ProductName</td>
-                    <td>@item.Quantity</td>
-                    <td>@item.UnitPrice</td>
-                    <td>@item.TotalPrice</td>
-                </tr>
+                <div class="alert alert-success d-flex align-items-center justify-content-between flex-wrap gap-2 mb-0">
+                    <div>
+                        <strong class="fs-5 text-success">✓ ĐÃ THANH TOÁN THÀNH CÔNG</strong>
+                        <div class="text-muted small mt-1">Phương thức thanh toán: <strong>@Model.PaymentMethod</strong></div>
+                    </div>
+                    <div class="text-end">
+                        <span class="badge bg-success px-3 py-2 fs-6">Đã hoàn tất</span>
+                    </div>
+                </div>
             }
-        </tbody>
-    </table>
+            else if (isBankTransfer)
+            {
+                <div class="alert alert-warning mb-3">
+                    <h6 class="fw-bold text-dark mb-2">📌 THÔNG TIN CHUYỂN KHOẢN NGÂN HÀNG (VIETQR)</h6>
+                    <div class="row align-items-center">
+                        <div class="col-md-7">
+                            <ul class="list-unstyled mb-0" style="line-height: 1.8;">
+                                <li>• Ngân hàng: <strong>MB Bank (Ngân hàng TMCP Quân Đội)</strong></li>
+                                <li>• Số tài khoản: <strong class="text-primary fs-5">0934632678</strong></li>
+                                <li>• Chủ tài khoản: <strong>NGUYEN MINH HUY</strong></li>
+                                <li>• Số tiền: <strong class="text-danger fs-5">@Model.TotalAmount.ToString("N0") VNĐ</strong></li>
+                                <li>• Nội dung CK: <strong class="text-success bg-light px-2 py-1 border rounded">THANHTOAN @Model.OrderID</strong></li>
+                            </ul>
+                        </div>
+                        <div class="col-md-5 text-center mt-3 mt-md-0">
+                            <div class="p-3 bg-white rounded border shadow-sm text-center">
+                                <span class="badge bg-warning text-dark px-3 py-2 fs-6 mb-2">⏳ Chờ Admin xác nhận thanh toán</span>
+                                <p class="text-muted small mb-0">
+                                    Quý khách vui lòng chuyển khoản đúng số tiền và nội dung trên.
+                                    <strong>Quản trị viên (Admin) sẽ kiểm tra tài khoản và xác nhận thanh toán</strong> cho đơn hàng của bạn.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-info d-flex align-items-center justify-content-between flex-wrap gap-2 mb-0">
+                    <div>
+                        <strong>💵 Thanh toán tiền mặt khi nhận hàng (COD)</strong>
+                        <div class="text-muted small mt-1">
+                            Quý khách vui lòng chuẩn bị số tiền <strong class="text-danger">@Model.TotalAmount.ToString("N0") VNĐ</strong> khi shipper giao hàng đến.
+                        </div>
+                    </div>
+                    <div>
+                        <span class="badge bg-secondary px-3 py-2">Chờ thanh toán khi nhận</span>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
 
-    <div class="text-center">
-        <a href="@Url.Action("Index", "Home")"
-           class="btn btn-primary">
-            Tiếp tục mua sắm
+    <!-- Thanh theo dõi tình trạng giao hàng -->
+    <div class="card mb-4 shadow-sm border-0" style="border-radius: 12px; padding: 20px; background: #fafafa;">
+        <h4 class="text-center" style="margin-bottom: 20px;">Tình trạng giao hàng hiện tại:
+            @if (deliveryStatus == "Chưa giao hàng")
+            {
+                <span class="badge bg-warning text-dark" style="font-size: 1rem; padding: 8px 14px;">Chưa giao hàng (Đang chuẩn bị hàng)</span>
+            }
+            else if (deliveryStatus == "Đang giao hàng")
+            {
+                <span class="badge bg-info text-dark" style="font-size: 1rem; padding: 8px 14px;">Đang giao hàng</span>
+            }
+            else if (deliveryStatus == "Đã giao hàng")
+            {
+                <span class="badge bg-success" style="font-size: 1rem; padding: 8px 14px;">Đã giao hàng thành công</span>
+            }
+            else
+            {
+                <span class="badge bg-danger" style="font-size: 1rem; padding: 8px 14px;">Đã hủy</span>
+            }
+        </h4>
+
+        @if (step > 0)
+        {
+            <div class="row text-center" style="margin-top: 10px;">
+                <div class="col-md-4">
+                    <div style="padding: 12px; border-radius: 6px; background-color: @(step >= 1 ? "#d1e7dd" : "#e9ecef"); color: @(step >= 1 ? "#0f5132" : "#6c757d"); font-weight: bold;">
+                        1. Chưa giao hàng<br />
+                        <small style="font-weight: normal;">Đã tiếp nhận & chờ xuất kho</small>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div style="padding: 12px; border-radius: 6px; background-color: @(step >= 2 ? "#cff4fc" : "#e9ecef"); color: @(step >= 2 ? "#055160" : "#6c757d"); font-weight: bold;">
+                        2. Đang giao hàng<br />
+                        <small style="font-weight: normal;">Shipper đang giao đến bạn</small>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div style="padding: 12px; border-radius: 6px; background-color: @(step >= 3 ? "#198754" : "#e9ecef"); color: @(step >= 3 ? "#ffffff" : "#6c757d"); font-weight: bold;">
+                        3. Đã giao hàng<br />
+                        <small style="font-weight: normal;">Đã nhận hàng thành công</small>
+                    </div>
+                </div>
+            </div>
+        }
+
+        @if (deliveryStatus == "Đang giao hàng" && (isPaid || isCOD))
+        {
+            <div class="text-center mt-3 pt-3 border-top">
+                <p class="text-success fw-semibold mb-2">🛵 Kiện hàng đang trên đường giao đến bạn. Bạn đã nhận được hàng?</p>
+                @using (Html.BeginForm("ConfirmDelivery", "Order", new { id = Model.OrderID, returnUrl = Url.Action("OrderSuccess", "Order", new { id = Model.OrderID }) }, FormMethod.Post, new { style = "display:inline;" }))
+                {
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-success px-4 py-2 fw-bold shadow-sm" onclick="return confirm('Bạn xác nhận đã nhận được đầy đủ hàng cho đơn #@Model.OrderID?');">
+                        ✅ Xác nhận đã nhận được hàng (Giao thành công)
+                    </button>
+                }
+            </div>
+        }
+        else if (deliveryStatus == "Chưa giao hàng")
+        {
+            <div class="text-center mt-3 pt-3 border-top text-muted small">
+                @if (isBankTransfer && !isPaid)
+                {
+                    <span>⏳ Đơn hàng đang chờ Admin xác nhận thanh toán chuyển khoản trước khi xuất kho.</span>
+                }
+                else
+                {
+                    <span>📦 Đơn hàng đang được chuẩn bị tại kho My Store và sẽ sớm được bàn giao cho Shipper.</span>
+                }
+            </div>
+        }
+        else if (deliveryStatus == "Đang giao hàng" && !isPaid && !isCOD)
+        {
+            <div class="text-center mt-3 pt-3 border-top text-warning fw-semibold small">
+                ⏳ Đơn hàng đang chờ Admin xác nhận thanh toán trước khi hoàn tất giao nhận.
+            </div>
+        }
+        else if (deliveryStatus == "Đã giao hàng")
+        {
+            <div class="text-center mt-3 pt-3 border-top text-success fw-bold">
+                ✓ Đơn hàng đã được xác nhận giao thành công. Cảm ơn quý khách!
+            </div>
+        }
+        else if (deliveryStatus == "Đã hủy")
+        {
+            <div class="text-center mt-3 pt-3 border-top text-danger fw-bold">
+                ❌ Đơn hàng đã được hủy.
+            </div>
+        }
+    </div>
+
+    <!-- Khối Thông tin đơn hàng chia 2 cột đều nhau (50% - 50%) -->
+    <div class="card shadow-sm border-0 mb-4" style="border-radius: 12px; background: #fff; overflow: hidden;">
+        <div class="card-header bg-white py-3 px-4 border-bottom">
+            <h5 class="mb-0 fw-bold text-success">📋 THÔNG TIN ĐƠN HÀNG #@Model.OrderID</h5>
+        </div>
+        <div class="card-body p-4">
+            <div class="row g-4">
+                <!-- Cột trái (50%): Thông tin đơn & thanh toán -->
+                <div class="col-md-6 border-end-md">
+                    <table class="table table-borderless align-middle mb-0" style="font-size: 0.95rem;">
+                        <tr>
+                            <th style="width: 44%; color: #6c757d; font-weight: 600; padding: 8px 0;">Mã đơn hàng:</th>
+                            <td style="padding: 8px 0;"><strong class="text-primary fs-6">#@Model.OrderID</strong></td>
+                        </tr>
+                        <tr>
+                            <th style="color: #6c757d; font-weight: 600; padding: 8px 0;">Ngày đặt hàng:</th>
+                            <td style="padding: 8px 0;">@Model.OrderDate.ToString("dd/MM/yyyy")</td>
+                        </tr>
+                        <tr>
+                            <th style="color: #6c757d; font-weight: 600; padding: 8px 0;">Phương thức thanh toán:</th>
+                            <td style="padding: 8px 0;"><span class="badge bg-light text-dark border">@Model.PaymentMethod</span></td>
+                        </tr>
+                        <tr>
+                            <th style="color: #6c757d; font-weight: 600; padding: 8px 0;">Trạng thái thanh toán:</th>
+                            <td style="padding: 8px 0;">
+                                @if (isPaid)
+                                {
+                                    <span class="badge bg-success">✓ @Model.PaymentOnlyStatus</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-warning text-dark">⏳ @Model.PaymentOnlyStatus</span>
+                                }
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+
+                <!-- Cột phải (50%): Thông tin giao nhận & Tổng tiền -->
+                <div class="col-md-6">
+                    <table class="table table-borderless align-middle mb-0" style="font-size: 0.95rem;">
+                        <tr>
+                            <th style="width: 44%; color: #6c757d; font-weight: 600; padding: 8px 0;">Tình trạng đơn hàng:</th>
+                            <td style="padding: 8px 0;">
+                                @if (Model.DeliveryStatus == "Đã giao hàng")
+                                {
+                                    <span class="badge bg-success">✓ Đã giao hàng</span>
+                                }
+                                else if (Model.DeliveryStatus == "Đang giao hàng")
+                                {
+                                    <span class="badge bg-info text-dark">🛵 Đang giao hàng</span>
+                                }
+                                else if (Model.DeliveryStatus == "Chưa giao hàng")
+                                {
+                                    <span class="badge bg-warning text-dark">📦 Chưa giao hàng</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger">@Model.DeliveryStatus</span>
+                                }
+                            </td>
+                        </tr>
+                        <tr>
+                            <th style="color: #6c757d; font-weight: 600; padding: 8px 0;">Phương thức giao hàng:</th>
+                            <td style="padding: 8px 0;">@Model.ShippingMethod</td>
+                        </tr>
+                        <tr>
+                            <th style="color: #6c757d; font-weight: 600; padding: 8px 0;">Địa chỉ nhận hàng:</th>
+                            <td style="padding: 8px 0;">@Model.ShippingAddress</td>
+                        </tr>
+                        <tr>
+                            <th style="color: #6c757d; font-weight: 600; padding: 8px 0;">Tổng số tiền:</th>
+                            <td style="padding: 8px 0;"><span class="text-danger fw-bold fs-5">@Model.TotalAmount.ToString("N0") VNĐ</span></td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Khối Chi tiết sản phẩm -->
+    <div class="card shadow-sm border-0 mb-4" style="border-radius: 12px; background: #fff; overflow: hidden;">
+        <div class="card-header bg-white py-3 px-4 border-bottom">
+            <h5 class="mb-0 fw-bold text-dark">🛒 CHI TIẾT SẢN PHẨM</h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead style="background-color: #f8f9fa;">
+                        <tr>
+                            <th style="padding: 14px 20px;">Sản phẩm</th>
+                            <th class="text-center" style="width: 120px;">Số lượng</th>
+                            <th class="text-end" style="width: 160px;">Đơn giá</th>
+                            <th class="text-end" style="width: 180px; padding-right: 20px;">Thành tiền</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.OrderDetails)
+                        {
+                            <tr>
+                                <td style="padding: 14px 20px;">
+                                    <strong>@(item.Product != null ? item.Product.ProductName : "Sản phẩm #" + item.ProductID)</strong>
+                                </td>
+                                <td class="text-center">@item.Quantity</td>
+                                <td class="text-end">@item.UnitPrice.ToString("N0") VNĐ</td>
+                                <td class="text-end fw-bold text-danger" style="padding-right: 20px;">@((item.Quantity * item.UnitPrice).ToString("N0")) VNĐ</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="text-center mt-4 mb-4 d-flex justify-content-center gap-3">
+        <a href="@Url.Action("Index", "Order")" class="btn btn-outline-primary px-4 py-2 fw-semibold shadow-sm">
+            📄 Xem tất cả đơn hàng của tôi
+        </a>
+        <a href="@Url.Action("Index", "Home")" class="btn btn-success px-4 py-2 fw-semibold shadow-sm">
+            🛒 Tiếp tục mua sắm
         </a>
     </div>
 </div>
