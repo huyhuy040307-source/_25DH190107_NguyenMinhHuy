@@ -7,7 +7,6 @@ using System.Web;
 using System.Web.Mvc;
 using PagedList;
 using _25DH190025_NguyenHuynhHongQuan.Models;
-
 namespace _25DH190025_NguyenHuynhHongQuan.Areas.Admin.Controllers
 {
     public class OrdersController : BaseAdminController

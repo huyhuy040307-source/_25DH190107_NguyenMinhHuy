@@ -6,7 +6,6 @@ using System.Net;
 using System.Web;
 using System.Web.Mvc;
 using _25DH190025_NguyenHuynhHongQuan.Models;
-
 namespace _25DH190025_NguyenHuynhHongQuan.Areas.Admin.Controllers
 {
     public class CustomersController : BaseAdminController
