@@ -1,4 +1,4 @@
-namespace _25DH190107_NguyenMinhHuy.Models
+namespace _25DH190025_NguyenHuynhHongQuan.Models
 {
     using System;
     using System.Collections.Generic;

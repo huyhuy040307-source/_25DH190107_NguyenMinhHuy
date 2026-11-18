@@ -10,13 +10,13 @@
 </head>
 <body>
     @{
-        var cartObj = Session["Cart"] as _25DH190107_NguyenMinhHuy.Models.ViewModel.Cart;
+        var cartObj = Session["Cart"] as _25DH190025_NguyenHuynhHongQuan.Models.ViewModel.Cart;
         int cartCount = cartObj != null && cartObj.Items != null ? cartObj.Items.Sum(i => i.Quantity) : 0;
 
-        List<_25DH190107_NguyenMinhHuy.Models.Category> navCategories = new List<_25DH190107_NguyenMinhHuy.Models.Category>();
+        List<_25DH190025_NguyenHuynhHongQuan.Models.Category> navCategories = new List<_25DH190025_NguyenHuynhHongQuan.Models.Category>();
         try
         {
-            using (var dbNav = new _25DH190107_NguyenMinhHuy.Models.MyStoreEntities())
+            using (var dbNav = new _25DH190025_NguyenHuynhHongQuan.Models.MyStoreEntities())
             {
                 navCategories = dbNav.Categories.ToList();
             }

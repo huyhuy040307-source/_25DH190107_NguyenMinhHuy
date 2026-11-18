@@ -1,6 +1,5 @@
 ﻿using System.Web.Mvc;
-
-namespace _25DH190107_NguyenMinhHuy.Areas.Admin.Controllers
+namespace _25DH190025_NguyenHuynhHongQuan.Areas.Admin.Controllers
 {
     public class AccountController : Controller
     {

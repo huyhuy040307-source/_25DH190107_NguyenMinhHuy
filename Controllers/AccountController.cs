@@ -1,5 +1,5 @@
-using _25DH190107_NguyenMinhHuy.Models;
-using _25DH190107_NguyenMinhHuy.Models.ViewModel;
+using _25DH190025_NguyenHuynhHongQuan.Models;
+using _25DH190025_NguyenHuynhHongQuan.Models.ViewModel;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,7 +7,7 @@ using System.Web;
 using System.Web.Mvc;
 using System.Web.Security;
 
-namespace _25DH190107_NguyenMinhHuy.Controllers
+namespace _25DH190025_NguyenHuynhHongQuan.Controllers
 {
     public class AccountController : Controller
     {

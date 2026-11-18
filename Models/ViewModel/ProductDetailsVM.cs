@@ -5,7 +5,7 @@ using System.Linq;
 using System.Web;
 using PagedList.Mvc;
 
-namespace _25DH190107_NguyenMinhHuy.Models.ViewModel
+namespace _25DH190025_NguyenHuynhHongQuan.Models.ViewModel
 {
     public class ProductDetailsVM
     {

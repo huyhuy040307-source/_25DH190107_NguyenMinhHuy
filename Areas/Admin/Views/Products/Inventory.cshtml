@@ -1,10 +1,9 @@
-@model IEnumerable<_25DH190107_NguyenMinhHuy.Models.Product>
 
 @{
     ViewBag.Title = "Quản lý kho hàng";
     Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
-    var inStock = ViewBag.InStockProducts as List<_25DH190107_NguyenMinhHuy.Models.Product> ?? new List<_25DH190107_NguyenMinhHuy.Models.Product>();
-    var outOfStock = ViewBag.OutOfStockProducts as List<_25DH190107_NguyenMinhHuy.Models.Product> ?? new List<_25DH190107_NguyenMinhHuy.Models.Product>();
+    var inStock = ViewBag.InStockProducts as List<_25DH190025_NguyenHuynhHongQuan.Models.Product> ?? new List<_25DH190025_NguyenHuynhHongQuan.Models.Product>();
+    var outOfStock = ViewBag.OutOfStockProducts as List<_25DH190025_NguyenHuynhHongQuan.Models.Product> ?? new List<_25DH190025_NguyenHuynhHongQuan.Models.Product>();
 }
 
 <h2 class="bg-success text-white p-2" style="border-radius: 4px;">QUẢN LÝ KHO HÀNG (TỒN KHO & CẦN NHẬP)</h2>

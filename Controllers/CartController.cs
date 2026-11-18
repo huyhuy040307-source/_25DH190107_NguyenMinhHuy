@@ -1,5 +1,5 @@
-using _25DH190107_NguyenMinhHuy.Models;
-using _25DH190107_NguyenMinhHuy.Models.ViewModel;
+using _25DH190025_NguyenHuynhHongQuan.Models;
+using _25DH190025_NguyenHuynhHongQuan.Models.ViewModel;
 using PagedList;
 using System;
 using System.Collections.Generic;
@@ -7,7 +7,7 @@ using System.Linq;
 using System.Web;
 using System.Web.Mvc;
 
-namespace _25DH190107_NguyenMinhHuy.Controllers
+namespace _25DH190025_NguyenHuynhHongQuan.Controllers
 {
     public class CartController : Controller
     {

@@ -1,7 +1,7 @@
 using System;
 using System.Web.Mvc;
 
-namespace _25DH190107_NguyenMinhHuy.Areas.Admin.Controllers
+namespace _25DH190025_NguyenHuynhHongQuan.Areas.Admin.Controllers
 {
     // Controller nền tảng phân quyền: Chỉ cho phép tài khoản vai trò Admin truy cập khu vực quản trị
     public class BaseAdminController : Controller

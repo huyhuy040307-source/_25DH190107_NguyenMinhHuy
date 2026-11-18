@@ -5,7 +5,7 @@ using System.Web;
 using System.Web.Mvc;
 using System.Web.Routing;
 
-namespace _25DH190107_NguyenMinhHuy
+namespace _25DH190025_NguyenHuynhHongQuan
 {
     public class RouteConfig
     {
@@ -17,7 +17,7 @@ namespace _25DH190107_NguyenMinhHuy
                 name: "Default",
                 url: "{controller}/{action}/{id}",
                 defaults: new { controller = "Home", action = "Index", id = UrlParameter.Optional },
-                namespaces: new[] { "_25DH190107_NguyenMinhHuy.Controllers" }
+                namespaces: new[] { "_25DH190025_NguyenHuynhHongQuan.Controllers" }
             );
         }
     }

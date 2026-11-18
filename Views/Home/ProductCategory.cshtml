@@ -1,10 +1,10 @@
-@model _25DH190107_NguyenMinhHuy.Models.ViewModel.ProductSearchVM
+@model _25DH190025_NguyenHuynhHongQuan.Models.ViewModel.ProductSearchVM
 @using PagedList.Mvc
 
 @{
     ViewBag.Title = "Danh mục sản phẩm";
     Layout = "~/Views/Shared/_Layout.cshtml";
-    var categories = ViewBag.Categories as List<_25DH190107_NguyenMinhHuy.Models.Category> ?? new List<_25DH190107_NguyenMinhHuy.Models.Category>();
+    var categories = ViewBag.Categories as List<_25DH190025_NguyenHuynhHongQuan.Models.Category> ?? new List<_25DH190025_NguyenHuynhHongQuan.Models.Category>();
     int? selectedCatId = ViewBag.SelectedCategoryID as int?;
     string selectedCatName = ViewBag.SelectedCategoryName as string ?? "Tất cả sản phẩm";
 }

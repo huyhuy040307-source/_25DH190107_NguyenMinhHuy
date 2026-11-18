@@ -1,6 +1,6 @@
 ﻿using System.Web.Mvc;
 
-namespace _25DH190107_NguyenMinhHuy.Areas.Admin
+namespace _25DH190025_NguyenHuynhHongQuan.Areas.Admin
 {
     public class AdminAreaRegistration : AreaRegistration 
     {
@@ -18,7 +18,7 @@ namespace _25DH190107_NguyenMinhHuy.Areas.Admin
                 "Admin_default",
                 "Admin/{controller}/{action}/{id}",
                 new { action = "Index", id = UrlParameter.Optional },
-                new[] { "_25DH190107_NguyenMinhHuy.Areas.Admin.Controllers" }
+                new[] { "_25DH190025_NguyenHuynhHongQuan.Areas.Admin.Controllers" }
             );
         }
     }

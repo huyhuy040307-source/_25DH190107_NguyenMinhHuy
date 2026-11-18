@@ -1,4 +1,4 @@
-@model _25DH190107_NguyenMinhHuy.Models.Product
+@model _25DH190025_NguyenHuynhHongQuan.Models.Product
 
 @{
     ViewBag.Title = "Cập nhật sản phẩm";
@@ -8,6 +8,7 @@
 <h2 class="bg-success text-white p-2">CẬP NHẬT SẢN PHẨM</h2>
 
 @using (Html.BeginForm("Edit", "Products", FormMethod.Post, new { enctype = "multipart/form-data" }))
+@using (Html.BeginForm())
 {
     @Html.AntiForgeryToken()
 

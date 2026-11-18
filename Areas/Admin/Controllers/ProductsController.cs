@@ -1,5 +1,5 @@
-using _25DH190107_NguyenMinhHuy.Models;
-using _25DH190107_NguyenMinhHuy.Models.ViewModel;
+using _25DH190025_NguyenHuynhHongQuan.Models;
+using _25DH190025_NguyenHuynhHongQuan.Models.ViewModel;
 using PagedList;
 using System;
 using System.Collections.Generic;
@@ -12,7 +12,7 @@ using System.Web;
 using System.Web.Mvc;
 using PagedList.Mvc;
 
-namespace _25DH190107_NguyenMinhHuy.Areas.Admin.Controllers
+namespace _25DH190025_NguyenHuynhHongQuan.Areas.Admin.Controllers
 {
     public class ProductsController : BaseAdminController
     {
