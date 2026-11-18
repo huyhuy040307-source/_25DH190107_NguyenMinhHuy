@@ -34,6 +34,12 @@
                         <th class="text-secondary" style="padding: 6px 0;">Tên khách hàng:</th>
                         <td style="padding: 6px 0;">
                             <strong>@(Model.Customer != null ? Model.Customer.CustomerName : "KH #" + Model.CustomerID)</strong>
+                            @if (Model.Customer != null)
+                            {
+                                <a href="@Url.Action("Details", "Customers", new { area = "Admin", id = Model.CustomerID })" class="badge bg-light text-primary border text-decoration-none ms-1" title="Xem chi tiết khách hàng">
+                                    👤 Xem KH
+                                </a>
+                            }
                             @if (Model.Customer != null && !string.IsNullOrEmpty(Model.Customer.CustomerPhone))
                             {
                                 <span class="text-muted small d-block">📞 @Model.Customer.CustomerPhone</span>
@@ -97,13 +103,36 @@
         <!-- Khung thao tác trạng thái đơn hàng -->
         <div class="card shadow-sm border-0 p-3 mb-3" style="border-radius: 10px; background: #f8f9fa;">
             <div class="d-flex gap-2 align-items-center flex-wrap">
-                @if (Model.PaymentOnlyStatus.IndexOf("Đã thanh toán", StringComparison.OrdinalIgnoreCase) < 0 && Model.DeliveryStatus != "Đã hủy")
+                @{
+                    bool isOrderCOD = !string.IsNullOrEmpty(Model.PaymentMethod) && 
+                        (Model.PaymentMethod.IndexOf("tiền mặt", StringComparison.OrdinalIgnoreCase) >= 0 || 
+                         Model.PaymentMethod.IndexOf("COD", StringComparison.OrdinalIgnoreCase) >= 0);
+                    bool isOrderPaid = !string.IsNullOrEmpty(Model.PaymentOnlyStatus) && 
+                        Model.PaymentOnlyStatus.IndexOf("Đã thanh toán", StringComparison.OrdinalIgnoreCase) >= 0;
+                }
+
+                @* Nút Xác nhận thanh toán & Giao hàng CHỈ DÀNH CHO đơn Chuyển khoản (Admin kiểm tra tiền vào TK). Đơn COD không cần Admin xác nhận tiền. *@
+                @if (!isOrderCOD && !isOrderPaid && Model.DeliveryStatus != "Đã hủy")
                 {
                     using (Html.BeginForm("ConfirmPayment", "Orders", new { area = "Admin", orderId = Model.OrderID, returnUrl = Request.RawUrl }, FormMethod.Post, new { style = "display:inline;" }))
                     {
                         @Html.AntiForgeryToken()
-                        <button type="submit" class="btn btn-success fw-bold shadow-sm" onclick="return confirm('Xác nhận đã nhận tiền thanh toán cho đơn hàng #@Model.OrderID?');">
-                            💳 Xác nhận đã nhận tiền
+                        <button type="submit" class="btn btn-success fw-bold shadow-sm" onclick="return confirm('Xác nhận đã nhận tiền thanh toán và chuyển đơn hàng #@Model.OrderID sang trạng thái Đang giao hàng?');">
+                            💳 Xác nhận thanh toán & Giao hàng
+                        </button>
+                    }
+                }
+                else if (isOrderCOD && Model.DeliveryStatus == "Chưa giao hàng")
+                {
+                    using (Html.BeginForm("UpdateStatus", "Orders", new { area = "Admin" }, FormMethod.Post, new { style = "display:inline;" }))
+                    {
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="orderId" value="@Model.OrderID" />
+                        <input type="hidden" name="deliveryStatus" value="Đang giao hàng" />
+                        <input type="hidden" name="paymentStatus" value="@Model.PaymentOnlyStatus" />
+                        <input type="hidden" name="returnUrl" value="@Request.RawUrl" />
+                        <button type="submit" class="btn btn-info text-white fw-bold shadow-sm" onclick="return confirm('Bàn giao đơn hàng COD #@Model.OrderID cho đơn vị vận chuyển (Shipper)?');">
+                            🚚 Bàn giao cho Shipper (Đang giao hàng)
                         </button>
                     }
                 }

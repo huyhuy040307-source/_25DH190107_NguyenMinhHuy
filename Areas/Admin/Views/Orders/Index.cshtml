@@ -27,6 +27,7 @@
             <label class="form-label fw-bold">Trạng thái thanh toán</label>
             <select name="paymentStatus" class="form-control">
                 <option value="" @(string.IsNullOrEmpty(selectedPayment) ? "selected" : "")>-- Tất cả --</option>
+                <option value="Chờ xác nhận" @(selectedPayment == "Chờ xác nhận" ? "selected" : "")>⏳ Chờ Admin xác nhận thanh toán</option>
                 <option value="Chưa thanh toán" @(selectedPayment == "Chưa thanh toán" ? "selected" : "")>Chưa thanh toán</option>
                 <option value="Thanh toán tiền mặt" @(selectedPayment == "Thanh toán tiền mặt" ? "selected" : "")>Thanh toán tiền mặt (COD)</option>
                 <option value="Chuyển khoản" @(selectedPayment == "Chuyển khoản" ? "selected" : "")>Chuyển khoản ngân hàng</option>
@@ -103,13 +104,35 @@ else
                     </td>
                     <td class="text-nowrap">
                         @Html.ActionLink("Chi tiết đơn hàng", "DetailedOrder", "Orders", new { area = "Admin", id = item.OrderID }, new { @class = "btn btn-info btn-sm text-white" })
-                        @if (item.PaymentOnlyStatus.IndexOf("Đã thanh toán", StringComparison.OrdinalIgnoreCase) < 0 && item.DeliveryStatus != "Đã hủy")
+                        @{
+                            bool isItemCOD = !string.IsNullOrEmpty(item.PaymentMethod) && 
+                                (item.PaymentMethod.IndexOf("tiền mặt", StringComparison.OrdinalIgnoreCase) >= 0 || 
+                                 item.PaymentMethod.IndexOf("COD", StringComparison.OrdinalIgnoreCase) >= 0);
+                            bool isItemPaid = !string.IsNullOrEmpty(item.PaymentOnlyStatus) && 
+                                item.PaymentOnlyStatus.IndexOf("Đã thanh toán", StringComparison.OrdinalIgnoreCase) >= 0;
+                        }
+                        @* Chỉ hiển thị nút xác nhận thanh toán cho đơn Chuyển khoản. Đơn COD hiển thị nút Bàn giao Shipper nếu chưa giao *@
+                        @if (!isItemCOD && !isItemPaid && item.DeliveryStatus != "Đã hủy")
                         {
                             using (Html.BeginForm("ConfirmPayment", "Orders", new { area = "Admin", orderId = item.OrderID, returnUrl = Request.RawUrl }, FormMethod.Post, new { style = "display:inline;" }))
                             {
                                 @Html.AntiForgeryToken()
-                                <button type="submit" class="btn btn-success btn-sm ms-1" onclick="return confirm('Xác nhận đã nhận tiền thanh toán cho đơn hàng #@item.OrderID?');">
-                                    💳 Xác nhận thanh toán
+                                <button type="submit" class="btn btn-success btn-sm ms-1" onclick="return confirm('Xác nhận đã nhận tiền thanh toán và chuyển đơn hàng #@item.OrderID sang trạng thái Đang giao hàng?');">
+                                    💳 Xác nhận thanh toán & Giao
+                                </button>
+                            }
+                        }
+                        else if (isItemCOD && item.DeliveryStatus == "Chưa giao hàng")
+                        {
+                            using (Html.BeginForm("UpdateStatus", "Orders", new { area = "Admin" }, FormMethod.Post, new { style = "display:inline;" }))
+                            {
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="orderId" value="@item.OrderID" />
+                                <input type="hidden" name="deliveryStatus" value="Đang giao hàng" />
+                                <input type="hidden" name="paymentStatus" value="@item.PaymentOnlyStatus" />
+                                <input type="hidden" name="returnUrl" value="@Request.RawUrl" />
+                                <button type="submit" class="btn btn-outline-primary btn-sm ms-1" onclick="return confirm('Bàn giao đơn hàng COD #@item.OrderID cho Shipper giao hàng?');">
+                                    🚚 Giao shipper
                                 </button>
                             }
                         }

@@ -46,12 +46,19 @@ namespace _25DH190107_NguyenMinhHuy.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
-            var orders = db.Orders
+            var allOrders = db.Orders
                 .Include("OrderDetails.Product")
                 .Where(o => o.CustomerID == customer.CustomerID)
                 .OrderByDescending(o => o.OrderDate)
                 .ThenByDescending(o => o.OrderID)
                 .ToList();
+
+            // Hàm kiểm tra đơn hàng có đang chờ Admin xác nhận thanh toán (ví dụ: chuyển khoản chưa được admin duyệt)
+            Func<Order, bool> isOrderPaid = o => !string.IsNullOrEmpty(o.PaymentOnlyStatus) && o.PaymentOnlyStatus.IndexOf("Đã thanh toán", StringComparison.OrdinalIgnoreCase) >= 0;
+            Func<Order, bool> isOrderCOD = o => !string.IsNullOrEmpty(o.PaymentMethod) && (o.PaymentMethod.IndexOf("tiền mặt", StringComparison.OrdinalIgnoreCase) >= 0 || o.PaymentMethod.IndexOf("COD", StringComparison.OrdinalIgnoreCase) >= 0);
+            Func<Order, bool> isWaitingAdminPayment = o => o.DeliveryStatus != "Đã hủy" && !isOrderPaid(o) && !isOrderCOD(o);
+
+            var orders = allOrders;
 
             // Tìm kiếm theo Mã đơn hàng hoặc Tên sản phẩm
             if (!string.IsNullOrWhiteSpace(searchTerm))
@@ -63,13 +70,26 @@ namespace _25DH190107_NguyenMinhHuy.Controllers
                 ).ToList();
             }
 
+            // Đếm số lượng đơn cho từng tab trạng thái
+            ViewBag.CountAll = allOrders.Count;
+            ViewBag.CountWaitingPayment = allOrders.Count(isWaitingAdminPayment);
+            ViewBag.CountProcessing = allOrders.Count(o => string.Equals(o.DeliveryStatus, "Chưa giao hàng", StringComparison.OrdinalIgnoreCase) && !isWaitingAdminPayment(o));
+            ViewBag.CountShipping = allOrders.Count(o => string.Equals(o.DeliveryStatus, "Đang giao hàng", StringComparison.OrdinalIgnoreCase));
+            ViewBag.CountDelivered = allOrders.Count(o => string.Equals(o.DeliveryStatus, "Đã giao hàng", StringComparison.OrdinalIgnoreCase));
+            ViewBag.CountCancelled = allOrders.Count(o => string.Equals(o.DeliveryStatus, "Đã hủy", StringComparison.OrdinalIgnoreCase));
+
             // Lọc theo tab trạng thái đơn hàng
             if (!string.IsNullOrWhiteSpace(status))
             {
                 if (status == "Chờ thanh toán")
                 {
-                    orders = orders.Where(o => o.PaymentOnlyStatus.IndexOf("Chưa thanh toán", StringComparison.OrdinalIgnoreCase) >= 0 ||
-                                               o.PaymentOnlyStatus.IndexOf("Chuyển khoản", StringComparison.OrdinalIgnoreCase) >= 0).ToList();
+                    // Các đơn đang chờ Admin xác nhận thanh toán
+                    orders = orders.Where(isWaitingAdminPayment).ToList();
+                }
+                else if (string.Equals(status, "Chưa giao hàng", StringComparison.OrdinalIgnoreCase))
+                {
+                    // Đang xử lý: các đơn đã thanh toán hoặc đơn COD tiền mặt, không gồm các đơn đang chờ admin duyệt thanh toán
+                    orders = orders.Where(o => string.Equals(o.DeliveryStatus, "Chưa giao hàng", StringComparison.OrdinalIgnoreCase) && !isWaitingAdminPayment(o)).ToList();
                 }
                 else
                 {
@@ -156,7 +176,7 @@ namespace _25DH190107_NguyenMinhHuy.Controllers
             return RedirectToAction("MyOrder");
         }
 
-        // POST: Order/ConfirmDelivery/5 (Khách hàng xác nhận đã nhận hàng thành công khi Shipper đang giao)
+        // POST: Order/ConfirmDelivery/5 (Khách hàng xác nhận đã nhận hàng thành công)
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult ConfirmDelivery(int id, string returnUrl = "")
@@ -168,12 +188,16 @@ namespace _25DH190107_NguyenMinhHuy.Controllers
             }
 
             var customer = db.Customers.SingleOrDefault(c => c.Username == username);
-            if (customer == null)
+            Order order = null;
+            if (customer != null)
             {
-                return RedirectToAction("Login", "Account");
+                order = db.Orders.SingleOrDefault(o => o.OrderID == id && o.CustomerID == customer.CustomerID);
+            }
+            if (order == null && (User.IsInRole("A") || User.IsInRole("Admin") || username.Equals("admin", StringComparison.OrdinalIgnoreCase)))
+            {
+                order = db.Orders.SingleOrDefault(o => o.OrderID == id);
             }
 
-            var order = db.Orders.SingleOrDefault(o => o.OrderID == id && o.CustomerID == customer.CustomerID);
             if (order != null)
             {
                 if (order.DeliveryStatus == "Đã hủy")
@@ -184,14 +208,10 @@ namespace _25DH190107_NguyenMinhHuy.Controllers
                 {
                     TempData["OrderMessage"] = "Đơn hàng #" + id + " đã được xác nhận giao thành công trước đó.";
                 }
-                else if (order.DeliveryStatus == "Chưa giao hàng")
-                {
-                    TempData["OrderError"] = "Đơn hàng đang chuẩn bị tại kho của Shop và chưa được giao cho Shipper, quý khách chưa thể nhận hàng.";
-                }
                 else
                 {
-                    bool isPaid = order.PaymentOnlyStatus.IndexOf("Đã thanh toán", StringComparison.OrdinalIgnoreCase) >= 0;
-                    bool isCOD = order.PaymentMethod.IndexOf("tiền mặt", StringComparison.OrdinalIgnoreCase) >= 0 || order.PaymentMethod.IndexOf("COD", StringComparison.OrdinalIgnoreCase) >= 0;
+                    bool isPaid = !string.IsNullOrEmpty(order.PaymentOnlyStatus) && order.PaymentOnlyStatus.IndexOf("Đã thanh toán", StringComparison.OrdinalIgnoreCase) >= 0;
+                    bool isCOD = !string.IsNullOrEmpty(order.PaymentMethod) && (order.PaymentMethod.IndexOf("tiền mặt", StringComparison.OrdinalIgnoreCase) >= 0 || order.PaymentMethod.IndexOf("COD", StringComparison.OrdinalIgnoreCase) >= 0);
 
                     if (!isPaid && !isCOD)
                     {
@@ -202,10 +222,10 @@ namespace _25DH190107_NguyenMinhHuy.Controllers
                         // Cập nhật tình trạng giao hàng thành "Đã giao hàng"
                         order.DeliveryStatus = "Đã giao hàng";
 
-                        // Nếu là đơn COD tiền mặt khi nhận hàng, tự động cập nhật sang Đã thanh toán
-                        if (!isPaid && isCOD)
+                        // Nếu là đơn COD tiền mặt khi nhận hàng, khi khách nhận được hàng tự động cập nhật sang Đã thanh toán
+                        if (isCOD)
                         {
-                            order.PaymentOnlyStatus = "Đã thanh toán (Tiền mặt khi nhận hàng)";
+                            order.PaymentOnlyStatus = "Đã thanh toán";
                         }
 
                         db.Entry(order).State = EntityState.Modified;

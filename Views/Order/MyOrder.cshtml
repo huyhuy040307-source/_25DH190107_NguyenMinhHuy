@@ -101,12 +101,24 @@
 
     <!-- Các Tab trạng thái đơn hàng theo đúng Slide 6 & 7 -->
     <div class="myorder-tabs">
-        <a href="@Url.Action("MyOrder", "Order", new { status = "", searchTerm = searchTerm })" class="myorder-tab @(string.IsNullOrEmpty(selectedStatus) ? "active" : "")">Tất cả đơn</a>
-        <a href="@Url.Action("MyOrder", "Order", new { status = "Chờ thanh toán", searchTerm = searchTerm })" class="myorder-tab @(selectedStatus == "Chờ thanh toán" ? "active" : "")">Chờ thanh toán</a>
-        <a href="@Url.Action("MyOrder", "Order", new { status = "Chưa giao hàng", searchTerm = searchTerm })" class="myorder-tab @(selectedStatus == "Chưa giao hàng" ? "active" : "")">Đang xử lý (Chưa giao)</a>
-        <a href="@Url.Action("MyOrder", "Order", new { status = "Đang giao hàng", searchTerm = searchTerm })" class="myorder-tab @(selectedStatus == "Đang giao hàng" ? "active" : "")">Đang vận chuyển (Đang giao)</a>
-        <a href="@Url.Action("MyOrder", "Order", new { status = "Đã giao hàng", searchTerm = searchTerm })" class="myorder-tab @(selectedStatus == "Đã giao hàng" ? "active" : "")">Đã giao</a>
-        <a href="@Url.Action("MyOrder", "Order", new { status = "Đã hủy", searchTerm = searchTerm })" class="myorder-tab @(selectedStatus == "Đã hủy" ? "active" : "")">Đã huỷ</a>
+        <a href="@Url.Action("MyOrder", "Order", new { status = "", searchTerm = searchTerm })" class="myorder-tab @(string.IsNullOrEmpty(selectedStatus) ? "active" : "")">
+            Tất cả đơn @(ViewBag.CountAll != null && (int)ViewBag.CountAll > 0 ? "(" + ViewBag.CountAll + ")" : "")
+        </a>
+        <a href="@Url.Action("MyOrder", "Order", new { status = "Chờ thanh toán", searchTerm = searchTerm })" class="myorder-tab @(selectedStatus == "Chờ thanh toán" ? "active" : "")">
+            Chờ thanh toán @(ViewBag.CountWaitingPayment != null && (int)ViewBag.CountWaitingPayment > 0 ? "(" + ViewBag.CountWaitingPayment + ")" : "")
+        </a>
+        <a href="@Url.Action("MyOrder", "Order", new { status = "Chưa giao hàng", searchTerm = searchTerm })" class="myorder-tab @(selectedStatus == "Chưa giao hàng" ? "active" : "")">
+            Đang xử lý (Chưa giao) @(ViewBag.CountProcessing != null && (int)ViewBag.CountProcessing > 0 ? "(" + ViewBag.CountProcessing + ")" : "")
+        </a>
+        <a href="@Url.Action("MyOrder", "Order", new { status = "Đang giao hàng", searchTerm = searchTerm })" class="myorder-tab @(selectedStatus == "Đang giao hàng" ? "active" : "")">
+            Đang vận chuyển (Đang giao) @(ViewBag.CountShipping != null && (int)ViewBag.CountShipping > 0 ? "(" + ViewBag.CountShipping + ")" : "")
+        </a>
+        <a href="@Url.Action("MyOrder", "Order", new { status = "Đã giao hàng", searchTerm = searchTerm })" class="myorder-tab @(selectedStatus == "Đã giao hàng" ? "active" : "")">
+            Đã giao @(ViewBag.CountDelivered != null && (int)ViewBag.CountDelivered > 0 ? "(" + ViewBag.CountDelivered + ")" : "")
+        </a>
+        <a href="@Url.Action("MyOrder", "Order", new { status = "Đã hủy", searchTerm = searchTerm })" class="myorder-tab @(selectedStatus == "Đã hủy" ? "active" : "")">
+            Đã huỷ @(ViewBag.CountCancelled != null && (int)ViewBag.CountCancelled > 0 ? "(" + ViewBag.CountCancelled + ")" : "")
+        </a>
     </div>
 
     <!-- Thanh tìm kiếm đơn hàng theo Mã đơn hàng hoặc Tên sản phẩm -->
@@ -226,6 +238,13 @@
                                     <span class="badge bg-secondary-subtle text-secondary border">
                                         📦 Shop đang chuẩn bị hàng
                                     </span>
+                                    using (Html.BeginForm("ConfirmDelivery", "Order", new { id = order.OrderID }, FormMethod.Post, new { style = "display:inline;" }))
+                                    {
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn btn-success btn-sm fw-bold shadow-sm ms-1" onclick="return confirm('Bạn xác nhận đã nhận được kiện hàng cho đơn hàng #@order.OrderID?');">
+                                            ✅ Đã nhận được hàng
+                                        </button>
+                                    }
                                 }
                             }
                             else if (canUserConfirm)

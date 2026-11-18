@@ -41,7 +41,16 @@ namespace _25DH190107_NguyenMinhHuy.Areas.Admin.Controllers
 
             if (!string.IsNullOrWhiteSpace(paymentStatus))
             {
-                ordersList = ordersList.Where(o => o.PaymentOnlyStatus.IndexOf(paymentStatus, StringComparison.OrdinalIgnoreCase) >= 0).ToList();
+                if (paymentStatus == "Chờ xác nhận" || paymentStatus == "Chờ thanh toán")
+                {
+                    ordersList = ordersList.Where(o => (string.IsNullOrEmpty(o.PaymentOnlyStatus) || o.PaymentOnlyStatus.IndexOf("Đã thanh toán", StringComparison.OrdinalIgnoreCase) < 0) &&
+                                                       (string.IsNullOrEmpty(o.PaymentMethod) || (o.PaymentMethod.IndexOf("tiền mặt", StringComparison.OrdinalIgnoreCase) < 0 && o.PaymentMethod.IndexOf("COD", StringComparison.OrdinalIgnoreCase) < 0)) &&
+                                                       o.DeliveryStatus != "Đã hủy").ToList();
+                }
+                else
+                {
+                    ordersList = ordersList.Where(o => o.PaymentOnlyStatus.IndexOf(paymentStatus, StringComparison.OrdinalIgnoreCase) >= 0).ToList();
+                }
             }
 
             if (!string.IsNullOrWhiteSpace(status))
@@ -87,7 +96,7 @@ namespace _25DH190107_NguyenMinhHuy.Areas.Admin.Controllers
             return DetailedOrder(id);
         }
 
-        // POST: Admin/Orders/ConfirmPayment
+        // POST: Admin/Orders/ConfirmPayment (Chỉ dùng cho đơn Chuyển khoản)
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult ConfirmPayment(int orderId, string returnUrl = "")
@@ -98,11 +107,27 @@ namespace _25DH190107_NguyenMinhHuy.Areas.Admin.Controllers
                 return HttpNotFound();
             }
 
-            order.PaymentOnlyStatus = "Đã thanh toán";
-            db.Entry(order).State = EntityState.Modified;
-            db.SaveChanges();
+            bool isCOD = !string.IsNullOrEmpty(order.PaymentMethod) && 
+                (order.PaymentMethod.IndexOf("tiền mặt", StringComparison.OrdinalIgnoreCase) >= 0 || 
+                 order.PaymentMethod.IndexOf("COD", StringComparison.OrdinalIgnoreCase) >= 0);
 
-            TempData["SuccessMessage"] = string.Format("Đã xác nhận thanh toán thành công cho đơn hàng #{0}!", orderId);
+            if (isCOD)
+            {
+                TempData["SuccessMessage"] = string.Format("Đơn hàng #{0} thanh toán tiền mặt (COD) - Shipper sẽ thu tiền khi giao và khách hàng bấm nhận hàng để hoàn tất.", orderId);
+            }
+            else
+            {
+                order.PaymentOnlyStatus = "Đã thanh toán";
+                if (order.DeliveryStatus != "Đã giao hàng" && order.DeliveryStatus != "Đã hủy")
+                {
+                    order.DeliveryStatus = "Đang giao hàng";
+                }
+
+                db.Entry(order).State = EntityState.Modified;
+                db.SaveChanges();
+
+                TempData["SuccessMessage"] = string.Format("Đã xác nhận thanh toán thành công cho đơn hàng #{0} và cập nhật trạng thái thành Đang giao hàng!", orderId);
+            }
 
             if (!string.IsNullOrWhiteSpace(returnUrl) && Url.IsLocalUrl(returnUrl))
             {
